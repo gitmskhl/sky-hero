@@ -1,20 +1,59 @@
 import pygame
-import utils
 import os
 import json
 
-
+BASE_DIR = '.'
 if __name__ == "__main__":
+    import utils
     pygame.init()
     HISTORY_MAX=100
     GRAY = (50,) * 3
 
     SCREEN_WIDTH = 800
     SCREEN_HEIGHT = 600
+else:
+    from . import utils
 
 # 16 x 16 is the base
 class Editor:
-    def __init__(self, level=1):
+    TRANSFORM_TILES = {'grass', 'stone'}
+    TRANSFORM_RULES = {
+        ((1, 0),): 0,
+        ((-1, 0), (1, 0)): 1,
+        ((-1, 0),): 2,
+        ((0, -1), (0, 1), (-1, 0)): 3,
+        ((0, -1), (-1, 0)): 4,
+        ((0, -1), (-1, 0), (1, 0)): 5,
+        ((0, -1), (1, 0)): 6,
+        ((0, -1), (1, 0), (0, 1)): 7,
+        ((0, -1), (0, 1), (1, 0), (-1, 0)): 5
+    }
+    TRANSFORM_RULES = {tuple(sorted(k)): v for k, v in TRANSFORM_RULES.items()}
+
+    def transform(self):
+        for pos, tile in self.tile_map.items():
+            tilerect = pygame.Rect(pos[0] * self.tile_size, pos[1] * self.tile_size, self.tile_size, self.tile_size)
+            if tile['resource'] in Editor.TRANSFORM_TILES:
+                neighbours = []
+                for i in range(-1, 2):
+                    for j in range(-1, 2):
+                        if i == 0 and j == 0 or i != 0 and j != 0: continue
+                        if (pos[0] + i, pos[1] + j) in self.tile_map and self.tile_map[(pos[0] + i, pos[1] + j)]['resource'] == tile['resource']:
+                            neighbours.append((i, j))
+                situation = tuple(sorted(neighbours))
+                if situation in Editor.TRANSFORM_RULES:
+                    tile['variant'] = Editor.TRANSFORM_RULES[situation]
+                else:
+                    suits = []
+                    for req_situation in Editor.TRANSFORM_RULES:
+                        if all([x in situation for x in req_situation]):
+                            suits.append(req_situation)
+                    if suits:
+                        suit_situation = sorted(suits, key=lambda x: -len(x))[0]
+                        tile['variant'] = Editor.TRANSFORM_RULES[suit_situation]
+                    
+    def __init__(self, level=None):
+        level = level if level is not None else 4
         self.level = level
         self.base_tile_size = 16
         self.tile_size = 16
@@ -172,7 +211,7 @@ class Editor:
         self.clicked = [False, False, False]
 
     def save(self):
-        with open(f'map_level{self.level}.json', 'w') as f:
+        with open(BASE_DIR + f'/maps/map_level{self.level}.json', 'w') as f:
             json.dump(
                 {
                     'tile_map': {str(k): v for k, v in self.tile_map.items()},
@@ -186,7 +225,7 @@ class Editor:
 
     def load(self):
         try:
-            with open(f'map_level{self.level}.json', 'r') as f:
+            with open(BASE_DIR + f'/maps/map_level{self.level}.json', 'r') as f:
                 data = json.load(f)
                 self.tile_map = {tuple(map(int, [x.replace('(', '').replace(')', '') for x in k.split(',')])): v for k, v in data['tile_map'].items()}
                 self.nogrid_tiles = data['nogrid_tiles']
@@ -274,6 +313,8 @@ if __name__ == "__main__":
                         editor.camera[0] *= editor.k
                         editor.camera[1] *= editor.k
                         editor._resize_resources()
+                elif event.key == pygame.K_t:
+                    editor.transform()
                 elif event.key == pygame.K_RIGHT:
                     editor.move[0] = 5
                 elif event.key == pygame.K_LEFT:

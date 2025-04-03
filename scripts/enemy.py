@@ -1,10 +1,10 @@
 import pygame
 from random import random, randint
-from player import Player
-from map import Map
-from physics import GRAVITY
-from utils import load_image
-from spark import Spark
+from scripts.player import Player
+from scripts.map import Map
+from scripts.physics import GRAVITY
+from scripts.utils import load_image
+from scripts.spark import Spark
 from math import pi, cos, sin
 
 class Enemy(Player):

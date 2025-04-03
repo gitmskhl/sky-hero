@@ -1,6 +1,6 @@
 
 import pygame
-import utils
+import scripts.utils as utils
 import os
 
 class Animation:

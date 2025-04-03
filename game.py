@@ -1,11 +1,11 @@
 import pygame
 import sys
-from map import Map
-from player import Player
-from enemy import Enemy 
-from physics import SCREEN_WIDTH, SCREEN_HEIGHT
-from utils import load_image
-from spark import Spark
+from scripts.map import Map
+from scripts.player import Player
+from scripts.enemy import Enemy 
+from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT
+from scripts.utils import load_image
+from scripts.spark import Spark
 from random import random
 from math import pi, cos, sin
 
@@ -15,7 +15,7 @@ if __name__ != "__main__":
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.NOFRAME)
 pygame.display.set_caption("Ninja")
 clock = pygame.time.Clock()
-level = 1
+level = 4
 
 
 pygame.init()

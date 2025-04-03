@@ -1,8 +1,8 @@
 import pygame
-from physics import GRAVITY, BLACK, WHITE
-from animation import AnimationManager
-from map import Map
-from utils import sign
+from scripts.physics import GRAVITY, BLACK, WHITE
+from scripts.animation import AnimationManager
+from scripts.map import Map
+from scripts.utils import sign
 from random import random, randint
 from math import sin, cos, pi
 

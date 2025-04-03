@@ -1,5 +1,5 @@
-from utils import load_images
-from physics import BLACK
+from scripts.utils import load_images
+from scripts.physics import BLACK
 from random import randint
 from math import sin
 

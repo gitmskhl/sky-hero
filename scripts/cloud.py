@@ -1,6 +1,6 @@
 from random import randint, choice
-from utils import load_images, load_image
-from physics import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK
+from scripts.utils import load_images, load_image
+from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK
 
 class Cloud:
     img = load_image('images/clouds/cloud_1.png', 1)
