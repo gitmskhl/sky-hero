@@ -63,14 +63,14 @@ class FloatWidget(Widget):
 class Button(Widget):
     defaultColors = [BLACK, YELLOW]
     defaultTextColors = [WHITE, BLACK] 
-    def __init__(self, root, text, x=0, y=0, w=0, h=0, colors=None, textColors=None, fontsize=50, fontfamily='Arial', border_radius=-1):
+    def __init__(self, root, text, x=0, y=0, w=0, h=0, colors=None, textColors=None, fontsize=60, font=None, border_radius=-1):
         '''
             colors / textColors = [defaultColor, hoverColor]
         '''
         super().__init__(root)
         self.root = root
         self.rect = pygame.Rect(x, y, w, h)
-        self.font = pygame.font.SysFont(fontfamily, fontsize)
+        self.font = font if font else pygame.font.Font('fonts/Amatic-Bold.ttf', fontsize)
         self.colors = colors if colors else Button.defaultColors
         self.textColors = textColors if textColors else Button.defaultTextColors
         self.color = self.colors[0]
@@ -280,9 +280,9 @@ class Slider(FloatWidget):
         )
 
 class Label(FloatWidget):
-    def __init__(self, root, text, dx=0, dy=0, positions=None, fontsize=50, fontfamily='Arial', color=BLACK):
+    def __init__(self, root, text, dx=0, dy=0, positions=None, fontsize=50, font=None, color=BLACK):
         self.rect = pygame.Rect(0, 0, 0, 0)
-        self.font = pygame.font.SysFont(fontfamily, fontsize)
+        self.font = font if font else pygame.font.Font('fonts/Pacifico.ttf', fontsize)
         self.rendered_text = self.font.render(text, True, color)
         super().__init__(root, pygame.Rect(dx, dy, *self.rendered_text.get_size()), positions)
     

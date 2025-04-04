@@ -82,6 +82,14 @@ class App:
             advanced_settings_menu.hit_slider.setValue(80)
             advanced_settings_menu.shoot_slider.connect(lambda slider=advanced_settings_menu.shoot_slider: self._certainEffectSliderMoved(slider, 'shoot'))
             advanced_settings_menu.shoot_slider.setValue(40)
+
+            self.sfx_sliders = {
+                'ambience': advanced_settings_menu.ambience_slider,
+                'jump': advanced_settings_menu.jump_slider,
+                'dash': advanced_settings_menu.dash_slider,
+                'hit': advanced_settings_menu.hit_slider,
+                'shoot': advanced_settings_menu.shoot_slider
+            }
             
             self.main_menu.addLayouts([start_menu, settings_menu, advanced_settings_menu])
         self.pause = False
@@ -100,8 +108,10 @@ class App:
             print(f"Effect '{effect_name}' not found in sfx dictionary.")
 
     def _effectSliderMoved(self, slider):
-        for sfx in self.sfx.values():
+        for sfx_name, sfx in self.sfx.items():
             sfx.set_volume(slider.value / 100)
+            self.sfx_sliders[sfx_name].setValue(slider.value)
+        
 
     def _sliderMoved(self, slider):
         pygame.mixer.music.set_volume(slider.value / 100)
