@@ -6,7 +6,8 @@ from scripts.enemy import Enemy
 from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT
 from scripts.utils import load_image
 from scripts.spark import Spark
-from scripts.menu import MainMenu
+from scripts.menu import MainMenu, StartMenu, SettingsMenu
+from scripts.widgets import Pages
 from copy import deepcopy
 from random import random
 from math import pi, cos, sin
@@ -52,9 +53,31 @@ class App:
         self.sfx['jump'].set_volume(.7)
 
         # menu
-        self.main_menu = MainMenu((SCREEN_WIDTH, SCREEN_HEIGHT))
+        size = (SCREEN_WIDTH, SCREEN_HEIGHT)
+        if 'main_menu' not in self.__dict__:
+            self.main_menu = Pages(size)
+            
+            start_menu = StartMenu(self.main_menu, size)
+            start_menu.play_button.connect(self._play_game)
+            start_menu.new_game_button.connect(self._new_game)
+            start_menu.exit_button.connect(lambda: exit())
+
+            settings_menu = SettingsMenu(self.main_menu, size)
+            settings_menu.volume_slider.connect(lambda slider=settings_menu.volume_slider: self._sliderMoved(slider))
+            settings_menu.volume_slider.setValue(50)
+            
+            self.main_menu.addLayouts([start_menu, settings_menu])
         self.pause = False
 
+    def _play_game(self):
+        self.pause = False
+        self.running = True
+
+    def _new_game(self):
+        self.__init__()
+
+    def _sliderMoved(self, slider):
+        pygame.mixer.music.set_volume(slider.value / 100)
 
     def _init_enemies(self):
         self.enemies = []
@@ -62,26 +85,18 @@ class App:
             self.enemies.append(Enemy('entities/enemy/', *pos, self.map, self))
 
     def menu_run(self):
+        copy_screen = screen.copy()
+        self.pause = True
         self.main_player.move = [0] * 4
-        clicked = False
-        while True:
+        while self.pause:
             self.clock.tick(60)
+            screen.blit(copy_screen, (0, 0))
             mouse_pos = pygame.mouse.get_pos()
-            self.main_menu.update(mouse_pos, clicked)
+            self.main_menu.update(mouse_pos, False)
             self.main_menu.render(screen)
-            if self.main_menu.play_button.clicked:
-                return
-            elif self.main_menu.new_game_button.clicked:
-                self.__init__()
-                return
-            elif self.main_menu.exit_button.clicked:
-                self.running = False
-                return
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    clicked = True
-                else:
-                    clicked = False
+                    self.main_menu.update(mouse_pos, True)
             pygame.display.update()
 
     def run(self):
