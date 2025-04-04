@@ -36,11 +36,29 @@ class SettingsMenu(VerticalLayout):
         padding = size[0] // 4
         super().__init__(root, paddings=[50, padding, 50, padding], space=10)
         br = 40
-        self.volume_slider = Slider(root, size[0] // 2, 10, positions=['center', 'center'])
+        
+        # background sound
+        self.volume_layout = VerticalLayout(root, paddings=[0] * 4, space=0)
+        volume_label = Label(root, "Background sound", positions=['left', 'bottom'], fontsize=40)
+        self.volume_slider = Slider(root, size[0] // 2, 10, positions=['center', 'top'], border_radius=10)
+        self.volume_layout.addWidget(volume_label)
+        self.volume_layout.addWidget(self.volume_slider)        
+
+        # effects sounds
+        self.effect_volume_layout = VerticalLayout(root, paddings=[0] * 4, space=0)
+        volume_label = Label(root, "Sound effects", positions=['left', 'bottom'], fontsize=40)
+        self.effect_volume_slider = Slider(root, size[0] // 2, 10, positions=['center', 'top'], border_radius=10)
+        self.effect_volume_layout.addWidget(volume_label)
+        self.effect_volume_layout.addWidget(self.effect_volume_slider)
+
+        self.advanced_sound_button = Button(root, text='Advanced', border_radius=br)
         self.back_button = Button(root, text='Back', border_radius=br)
-        self.addWidget(self.volume_slider)
+        self.addWidget(self.effect_volume_layout)
+        self.addWidget(self.volume_layout)
+        self.addWidget(self.advanced_sound_button)
         self.addWidget(self.back_button)
     
+
     def update(self, mouse_pos, clicked):
         if not self.showed: return
         super().update(mouse_pos, clicked)

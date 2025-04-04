@@ -279,6 +279,19 @@ class Slider(FloatWidget):
             self.r
         )
 
+class Label(FloatWidget):
+    def __init__(self, root, text, dx=0, dy=0, positions=None, fontsize=50, fontfamily='Arial', color=BLACK):
+        self.rect = pygame.Rect(0, 0, 0, 0)
+        self.font = pygame.font.SysFont(fontfamily, fontsize)
+        self.rendered_text = self.font.render(text, True, color)
+        super().__init__(root, pygame.Rect(dx, dy, *self.rendered_text.get_size()), positions)
+    
+    def update(self, mouse_pos, clicked): pass
+
+    def render(self, surf, opacity=None):
+        surf.blit(self.rendered_text, self.innerRect.topleft)
+
+
 class Pages:
     def __init__(self, size):
         self.ml = VerticalLayout(None)

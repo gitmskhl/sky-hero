@@ -19,7 +19,7 @@ if __name__ != "__main__":
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.NOFRAME)
 pygame.display.set_caption("Ninja")
 clock = pygame.time.Clock()
-level = 4
+level = 1
 
 
 pygame.init()
@@ -39,18 +39,21 @@ class App:
         self.transition = -30
         self.win_timer = 0
 
-        self.sfx = {
-            'jump': pygame.mixer.Sound('sfx/jump.wav'),
-            'dash': pygame.mixer.Sound('sfx/dash.wav'),
-            'hit': pygame.mixer.Sound('sfx/hit.wav'),
-            'shoot': pygame.mixer.Sound('sfx/shoot.wav'),
-            'ambience': pygame.mixer.Sound('sfx/ambience.wav'),
-        }
-        self.sfx['ambience'].set_volume(.2)
-        self.sfx['dash'].set_volume(.3)
-        self.sfx['hit'].set_volume(.8)
-        self.sfx['shoot'].set_volume(.4)
-        self.sfx['jump'].set_volume(.7)
+        if 'main_menu' not in self.__dict__:
+
+            self.sfx = {
+                'jump': pygame.mixer.Sound('sfx/jump.wav'),
+                'dash': pygame.mixer.Sound('sfx/dash.wav'),
+                'hit': pygame.mixer.Sound('sfx/hit.wav'),
+                'shoot': pygame.mixer.Sound('sfx/shoot.wav'),
+                'ambience': pygame.mixer.Sound('sfx/ambience.wav'),
+            }
+
+            self.sfx['ambience'].set_volume(.2)
+            self.sfx['dash'].set_volume(.3)
+            self.sfx['hit'].set_volume(.8)
+            self.sfx['shoot'].set_volume(.4)
+            self.sfx['jump'].set_volume(.7)
 
         # menu
         size = (SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -63,6 +66,8 @@ class App:
             start_menu.exit_button.connect(lambda: exit())
 
             settings_menu = SettingsMenu(self.main_menu, size)
+            settings_menu.effect_volume_slider.connect(lambda slider=settings_menu.effect_volume_slider: self._effectSliderMoved(slider))
+            settings_menu.effect_volume_slider.setValue(50)
             settings_menu.volume_slider.connect(lambda slider=settings_menu.volume_slider: self._sliderMoved(slider))
             settings_menu.volume_slider.setValue(50)
             
@@ -75,6 +80,10 @@ class App:
 
     def _new_game(self):
         self.__init__()
+
+    def _effectSliderMoved(self, slider):
+        for sfx in self.sfx.values():
+            sfx.set_volume(slider.value / 100)
 
     def _sliderMoved(self, slider):
         pygame.mixer.music.set_volume(slider.value / 100)
