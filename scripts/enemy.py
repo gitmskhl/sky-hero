@@ -44,6 +44,7 @@ class Enemy(Player):
         if self.game.main_player.dashing >= 50:
             if self.game.main_player.get_rect().colliderect(self.get_rect()):
                 self.game.sfx['hit'].play()
+                self.game.combo.use(self.game.display)
                 self.map.screenshake = max(16, self.map.screenshake)
                 self.killed = True
                 for _ in range(30):

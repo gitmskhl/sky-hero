@@ -8,7 +8,8 @@ from scripts.utils import load_image
 from scripts.spark import Spark
 from scripts.menu import MainMenu, StartMenu, SettingsMenu, AdvancedSettingsMenu
 from scripts.widgets import Pages
-from copy import deepcopy
+from scripts.combo import Combo
+
 from random import random
 from math import pi, cos, sin
 
@@ -17,7 +18,7 @@ if __name__ != "__main__":
 	exit(0)
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.NOFRAME)
-pygame.display.set_caption("Ninja")
+pygame.display.set_caption("Sky Hero")
 clock = pygame.time.Clock()
 level = 1
 
@@ -92,7 +93,11 @@ class App:
             }
             
             self.main_menu.addLayouts([start_menu, settings_menu, advanced_settings_menu])
+            # enemy icon
+            enemy_img = self.map.resources['spawners'][1]
+            self.small_enemy_img = pygame.transform.scale(enemy_img, (enemy_img.get_width() / 1.5, enemy_img.get_height() / 1.5))
         self.pause = False
+        self.combo = Combo('COMBO')
 
     def _play_game(self):
         self.pause = False
@@ -162,6 +167,11 @@ class App:
 
             self.map.update()
             self.map.render(self.display, self.display_2)
+            self.combo.update()
+            self.combo.render(self.display)
+
+            for i in range(len(self.enemies)):
+                self.display.blit(self.small_enemy_img, (5 + i * (self.small_enemy_img.get_width() * 2), 5))
 
             # main player
             if self.dead > 0 or self.main_player.dead:
