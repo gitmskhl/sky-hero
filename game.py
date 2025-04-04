@@ -1,5 +1,7 @@
 import pygame
 import sys
+import pickle
+import os
 from scripts.map import Map
 from scripts.player import Player
 from scripts.enemy import Enemy 
@@ -21,7 +23,6 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.NOFRAME)
 pygame.display.set_caption("Sky Hero")
 clock = pygame.time.Clock()
 level = 1
-
 
 pygame.init()
 class App:
@@ -64,7 +65,7 @@ class App:
             start_menu = StartMenu(self.main_menu, size)
             start_menu.play_button.connect(self._play_game)
             start_menu.new_game_button.connect(self._new_game)
-            start_menu.exit_button.connect(lambda: exit())
+            start_menu.exit_button.connect(self.exit_game)
 
             settings_menu = SettingsMenu(self.main_menu, size)
             settings_menu.effect_volume_slider.connect(lambda slider=settings_menu.effect_volume_slider: self._effectSliderMoved(slider))
@@ -98,6 +99,11 @@ class App:
             self.small_enemy_img = pygame.transform.scale(enemy_img, (enemy_img.get_width() / 1.5, enemy_img.get_height() / 1.5))
         self.pause = False
         self.combo = Combo('COMBO')
+
+    def exit_game(self):
+        save()
+        pygame.quit()
+        sys.exit()
 
     def _play_game(self):
         self.pause = False
@@ -278,7 +284,22 @@ class App:
             screen.blit(self.display_2, (0, 0))
             pygame.display.flip()
 
+def save():
+    global level
+    print('saving: level = %d' % level)
+    with open('.info', 'wb') as f:
+        pickle.dump(level, f)
 
+def load():
+    global level
+    if not os.path.exists('.info'):
+        level = 1
+    else:
+        with open('.info', 'rb') as f:
+            level = pickle.load(f)
+    print('loading: level = %d' % level)
+
+load()
 App().run()
 pygame.quit()
 sys.exit()
