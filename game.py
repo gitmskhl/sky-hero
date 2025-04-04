@@ -6,7 +6,7 @@ from scripts.enemy import Enemy
 from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT
 from scripts.utils import load_image
 from scripts.spark import Spark
-from scripts.menu import MainMenu, StartMenu, SettingsMenu
+from scripts.menu import MainMenu, StartMenu, SettingsMenu, AdvancedSettingsMenu
 from scripts.widgets import Pages
 from copy import deepcopy
 from random import random
@@ -70,8 +70,20 @@ class App:
             settings_menu.effect_volume_slider.setValue(50)
             settings_menu.volume_slider.connect(lambda slider=settings_menu.volume_slider: self._sliderMoved(slider))
             settings_menu.volume_slider.setValue(50)
+
+            advanced_settings_menu = AdvancedSettingsMenu(self.main_menu, size)
+            advanced_settings_menu.ambience_slider.connect(lambda slider=advanced_settings_menu.ambience_slider: self._certainEffectSliderMoved(slider, 'ambience'))
+            advanced_settings_menu.ambience_slider.setValue(20)
+            advanced_settings_menu.jump_slider.connect(lambda slider=advanced_settings_menu.jump_slider: self._certainEffectSliderMoved(slider, 'jump'))
+            advanced_settings_menu.jump_slider.setValue(70)
+            advanced_settings_menu.dash_slider.connect(lambda slider=advanced_settings_menu.dash_slider: self._certainEffectSliderMoved(slider, 'dash'))
+            advanced_settings_menu.dash_slider.setValue(30)
+            advanced_settings_menu.hit_slider.connect(lambda slider=advanced_settings_menu.hit_slider: self._certainEffectSliderMoved(slider, 'hit'))
+            advanced_settings_menu.hit_slider.setValue(80)
+            advanced_settings_menu.shoot_slider.connect(lambda slider=advanced_settings_menu.shoot_slider: self._certainEffectSliderMoved(slider, 'shoot'))
+            advanced_settings_menu.shoot_slider.setValue(40)
             
-            self.main_menu.addLayouts([start_menu, settings_menu])
+            self.main_menu.addLayouts([start_menu, settings_menu, advanced_settings_menu])
         self.pause = False
 
     def _play_game(self):
@@ -80,6 +92,12 @@ class App:
 
     def _new_game(self):
         self.__init__()
+
+    def _certainEffectSliderMoved(self, slider, effect_name):
+        if effect_name in self.sfx:
+            self.sfx[effect_name].set_volume(slider.value / 100)
+        else:
+            print(f"Effect '{effect_name}' not found in sfx dictionary.")
 
     def _effectSliderMoved(self, slider):
         for sfx in self.sfx.values():
