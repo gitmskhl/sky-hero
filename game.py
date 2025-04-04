@@ -6,8 +6,11 @@ from scripts.enemy import Enemy
 from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT
 from scripts.utils import load_image
 from scripts.spark import Spark
+from scripts.menu import MainMenu
+from copy import deepcopy
 from random import random
 from math import pi, cos, sin
+
 
 if __name__ != "__main__":
 	exit(0)
@@ -48,11 +51,38 @@ class App:
         self.sfx['shoot'].set_volume(.4)
         self.sfx['jump'].set_volume(.7)
 
+        # menu
+        self.main_menu = MainMenu((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.pause = False
+
 
     def _init_enemies(self):
         self.enemies = []
         for pos in self.map.get_positions('spawners', 1, keep=False):
             self.enemies.append(Enemy('entities/enemy/', *pos, self.map, self))
+
+    def menu_run(self):
+        self.main_player.move = [0] * 4
+        clicked = False
+        while True:
+            self.clock.tick(60)
+            mouse_pos = pygame.mouse.get_pos()
+            self.main_menu.update(mouse_pos, clicked)
+            self.main_menu.render(screen)
+            if self.main_menu.play_button.clicked:
+                return
+            elif self.main_menu.new_game_button.clicked:
+                self.__init__()
+                return
+            elif self.main_menu.exit_button.clicked:
+                self.running = False
+                return
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    clicked = True
+                else:
+                    clicked = False
+            pygame.display.update()
 
     def run(self):
         pygame.mixer.music.load('sfx/music.wav')
@@ -156,7 +186,8 @@ class App:
                         self.main_player.move[0] = False
                         self.main_player.flip = False
                     elif event.key == pygame.K_ESCAPE:
-                        self.running = False
+                        # self.running = False
+                        self.menu_run()
                     elif event.key == pygame.K_SPACE:
                         self.main_player.jump()
                     elif event.key == pygame.K_x:
