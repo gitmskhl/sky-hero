@@ -312,7 +312,7 @@ class BlinkingLabel(Label):
             self.timer = 0
             self.blinking = not self.blinking
 
-    def render(self, surf):
+    def render(self, surf, opacity=None):
         if not self.showed: return
         if self.blinking:
             super().render(surf, opacity=self.opacity)
