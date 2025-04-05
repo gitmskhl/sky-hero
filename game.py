@@ -11,6 +11,7 @@ from scripts.spark import Spark
 from scripts.menu import MainMenu, StartMenu, SettingsMenu, AdvancedSettingsMenu
 from scripts.widgets import Pages
 from scripts.combo import Combo
+from tour import Tour_1
 import gc
 
 from random import random
@@ -295,13 +296,16 @@ def save():
 def load():
     global level
     if not os.path.exists('.info'):
-        level = 1
+        level = -1
     else:
         with open('.info', 'rb') as f:
             level = pickle.load(f)
     print('loading: level = %d' % level)
 
 load()
-App().run()
+app = App()
+if level < 0:
+    Tour_1(app, screen).run()
+app.run()
 pygame.quit()
 sys.exit()

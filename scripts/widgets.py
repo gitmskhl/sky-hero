@@ -129,6 +129,11 @@ class Layout(Widget):
     def addWidget(self, widget):
         self.widgets.append(widget)
 
+    def popWidget(self, dispose_required=True):
+        self.widgets.pop()
+        if dispose_required:
+            self.dispose()
+
     def update(self, mouse_pos, clicked):
         if not self.showed: return
         for widget in self.widgets:
@@ -280,16 +285,144 @@ class Slider(FloatWidget):
         )
 
 class Label(FloatWidget):
-    def __init__(self, root, text, dx=0, dy=0, positions=None, fontsize=50, font=None, color=BLACK):
+    def __init__(self, root, text, dx=0, dy=0, positions=None, fontsize=50, font=None, color=BLACK, size=None):
         self.rect = pygame.Rect(0, 0, 0, 0)
         self.font = font if font else pygame.font.Font('fonts/Pacifico.ttf', fontsize)
         self.rendered_text = self.font.render(text, True, color)
-        super().__init__(root, pygame.Rect(dx, dy, *self.rendered_text.get_size()), positions)
+        size = size if size else self.rendered_text.get_size()
+        super().__init__(root, pygame.Rect(dx, dy, *size), positions)
     
     def update(self, mouse_pos, clicked): pass
 
     def render(self, surf, opacity=None):
         surf.blit(self.rendered_text, self.innerRect.topleft)
+
+class BlinkingLabel(Label):
+    def __init__(self, root, text, dx=0, dy=0, positions=None, fontsize=50, font=None, color=BLACK, blinktime=50):
+        super().__init__(root, text, dx, dy, positions, fontsize, font, color)
+        self.blinking = True
+        self.opacity = 255
+        self.blinktime = blinktime
+        self.timer = 0
+
+    def update(self, mouse_pos, clicked):
+        if not self.showed: return
+        self.timer += 1
+        if self.timer >= self.blinktime:
+            self.timer = 0
+            self.blinking = not self.blinking
+
+    def render(self, surf):
+        if not self.showed: return
+        if self.blinking:
+            super().render(surf, opacity=self.opacity)
+
+
+class GradualLabel(Label):
+    def __init__(self, root, text, dx=0, dy=0, paddings=[0] * 4, positions=None, fontsize=50, font=None, color=BLACK, deltatime=10, size=None, expand=False, line_space=None):
+        size = size if size else (root.rect.size if expand else None)
+        super().__init__(root, text, dx, dy, positions, fontsize, font, color, size)
+        self.color = color
+        self.dx = dx
+        self.dy = dy
+        self.positions = positions
+        self.fontsize = fontsize
+        self.font = font
+        self.color = color
+
+        self.rendered_text = self.font.render('', True, color)
+        self.line_space = line_space if line_space else 0
+        self.main_layout = VerticalLayout(root, paddings=paddings, space=0)
+        self.last_label = Label(self.main_layout, '', dx=dx, dy=dy, positions=positions, fontsize=fontsize, font=self.font, color=self.color)
+        self.main_layout.addWidget(self.last_label)
+        self.start_index = 0
+
+        self.origin_text = text
+        self.deltatime = deltatime
+        self.timer = 0
+        self.current_idx = 0
+        self.finished = False
+
+    def dispose(self):
+        self.main_layout.rect.width = self.rect.width
+        self.main_layout.rect.height = self.rect.height
+        n = len([widget for widget in self.main_layout.widgets if widget.showed])
+        h = self.last_label.rendered_text.get_height()
+        self.main_layout.space = self.line_space
+        self.main_layout.paddings[2] = self.main_layout.rect.height - h * n - self.line_space * (n - 1)
+        self.main_layout.dispose()
+
+    def update(self, mouse_pos, clicked):
+        if not self.showed or self.finished: return
+        if self.current_idx == len(self.origin_text): 
+            self.finished = True
+            return
+        self.timer += 1
+        if self.timer == self.deltatime:
+            self.timer = 0
+            self.current_idx += 1
+            self.rendered_text = self.font.render(self.origin_text[self.start_index:self.current_idx + 1], True, self.color)
+            if self.rendered_text.get_width() > self.innerRect.width or (self.current_idx < len(self.origin_text) and self.origin_text[self.current_idx] == '\n'):
+                self.main_layout.addWidget(self.last_label)
+                self.start_index = self.current_idx
+            else:
+                self.main_layout.popWidget(dispose_required=False)
+                self.last_label = Label(self.main_layout, self.origin_text[self.start_index:self.current_idx + 1], self.dx, self.dy, self.positions, self.fontsize, self.font, self.color)
+                self.main_layout.addWidget(self.last_label)
+                self.dispose()
+
+    def render(self, surf, opacity=None):
+        if not self.showed: return
+        self.main_layout.render(surf, opacity=opacity)
+
+
+class GradualStoryWidget(FloatWidget):
+    def __init__(self, root, texts, size, dx=0, dy=0, paddings=[0] * 4, positions=['left', 'top'], fontsize=60, font=None, color=BLACK, deltatime=10, delay=60, line_space=None):
+        self.rect = pygame.Rect(0, 0, 0, 0)
+        super().__init__(root, pygame.Rect(dx, dy, *size), positions)
+        self.font = font if font else pygame.font.Font('fonts/Pacifico.ttf', fontsize)
+        self.fontsize = fontsize
+        self.color = color
+        self.timer = 0
+        self.delay = delay
+        self.current_idx = 0
+        self.glabels = [
+            GradualLabel(root, text, paddings=paddings, positions=positions, fontsize=fontsize, font=self.font, color=self.color, deltatime=deltatime, size=size, expand=True, line_space=line_space)
+            for text in texts
+        ]
+        self.pause = False
+        self.finished = False
+    
+
+    def update(self, mouse_pos, clicked):
+        if not self.showed or self.finished: return 
+        if not self.pause:
+            glabel = self.glabels[self.current_idx]
+            glabel.update(mouse_pos, clicked)
+            if glabel.finished:
+                self.current_idx += 1
+                if self.current_idx == len(self.glabels):
+                    self.finished = True
+                    return
+                self.pause = True
+                self.timer = 0
+        else:
+            self.timer += 1
+            if self.timer == self.delay:
+                self.pause = False
+                self.timer = 0
+
+    def render(self, surf, opacity=None):
+        if not self.showed: return
+        if not self.finished:
+            if not self.pause:
+                glabel = self.glabels[self.current_idx]
+            else:
+                glabel = self.glabels[self.current_idx - 1]
+        else:
+            glabel = self.glabels[-1]
+        glabel.render(surf, opacity=opacity)
+
 
 
 class Pages:
