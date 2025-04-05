@@ -59,13 +59,44 @@ class Tour_1:
         self.layout_4.dispose()
 
 
-        self.layouts = [self.layout_2, self.layout_3, self.layout_4]
-        self.wigdets = [self.widget_2, self.blinkin_label_3, self.widget_4]
+        # layout 5
+        self.layout_5 = VerticalLayout(None, paddings=[0] * 4, space=0)
+        self.layout_5.setSize(self.screen.get_width(), self.screen.get_height())
+        texts = [
+            "The next step is to learn how to jump.",
+            "There will be many obstacles\n in the game, and you need\n to be able to jump.",
+            "To jump, press the `Space` key.",
+        ]
+        texts = [text.replace(' ', '  ') for text in texts]
+        self.widget_5 = GradualStoryWidget(self.layout_5, texts, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT), paddings=[0, 20, 0, 20], positions=['left', 'top'], fontsize=58, deltatime=DELTA_TIME, delay=120)
+        self.layout_5.addWidget(self.widget_5)
+        self.layout_5.dispose()
+
+        # layout 6
+        self.layout_6 = VerticalLayout(None, paddings=[0] * 4, space=0)
+        self.layout_6.setSize(self.screen.get_width(), self.screen.get_height())
+        self.blinkin_label_6 = BlinkingLabel(self.layout_3, "Press `Space` to jump".replace(' ', '  '), positions=['center', 'top'], font=pygame.font.Font('fonts/Pacifico.ttf', 60), color=BLACK, blinktime=30)
+        self.blinkin_label_6.finished = False
+        self.layout_6.addWidget(self.blinkin_label_6)
+        self.layout_6.dispose()
+
+        # layout 7
+        self.layout_7 = VerticalLayout(None, paddings=[0] * 4, space=0)
+        self.layout_7.setSize(self.screen.get_width(), self.screen.get_height())
+        self.widget_7 = Label(self.layout_7, 'Perfect!'.replace(' ', '  '), positions=['center', 'top'], font=pygame.font.Font('fonts/Pacifico.ttf', 60), color=BLACK)
+        self.widget_7.finished = True
+        self.layout_7.addWidget(self.widget_7)
+        self.layout_7.dispose()
+
+        self.layouts = [self.layout_2, self.layout_3, self.layout_4, self.layout_5, self.layout_6, self.layout_7]
+        self.widgets = [self.widget_2, self.blinkin_label_3, self.widget_4, self.widget_5, self.blinkin_label_6, self.widget_7]
 
         self.current_layout = self.layout_1
         self.current_widget = self.widget_1
         self.timer = 0
         self.delta_time = 120
+
+        self.transition = 0
 
         # debug
         self.timer = 0
@@ -88,8 +119,11 @@ class Tour_1:
                     self.step += 1
                     if self.step == 3:
                         self.delta_time = 60 * 5
-                    self.current_layout = self.layouts[self.step - 1]
-                    self.current_widget = self.wigdets[self.step - 1]
+                    else:
+                        self.delta_time = 120
+                    if self.step - 1 < len(self.layouts):
+                        self.current_layout = self.layouts[self.step - 1]
+                        self.current_widget = self.widgets[self.step - 1]
 
             self.current_layout.update(pygame.mouse.get_pos(), False)
             self.current_layout.render(self.app.display, opacity=255)
@@ -105,12 +139,15 @@ class Tour_1:
                         self.app.main_player.move[0] = True
                         self.app.main_player.move[1] = False
                         self.app.main_player.flip = True
-                        self.current_widget.finished = True
+                        self.blinkin_label_3.finished = True
                     elif event.key == pygame.K_RIGHT and self.step >= 2:
                         self.app.main_player.move[1] = True
                         self.app.main_player.move[0] = False
                         self.app.main_player.flip = False
-                        self.current_widget.finished = True
+                        self.blinkin_label_3.finished = True
+                    elif event.key == pygame.K_SPACE and self.step >= 5:
+                        self.app.main_player.jump()
+                        self.blinkin_label_6.finished = True
                     elif event.key == pygame.K_ESCAPE:
                         # self.running = False
                         self.app.menu_run()
@@ -120,6 +157,17 @@ class Tour_1:
                         self.app.main_player.move[0] = False
                     elif event.key == pygame.K_RIGHT and self.step >= 2:
                         self.app.main_player.move[1] = False
+
+            if self.transition or (self.step > len(self.layouts)):
+                surf = pygame.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+                surf.fill((0, 0, 0))
+                coef = (self.SCREEN_WIDTH ** 2 + self.SCREEN_HEIGHT ** 2) ** .5 / 2 // 30 + 1
+                pygame.draw.circle(surf, (255, 255, 255), (self.SCREEN_WIDTH // 2, self.SCREEN_HEIGHT // 2), coef * (30 - abs(self.transition)))
+                surf.set_colorkey((255, 255, 255))
+                self.app.display.blit(surf, (0, 0))
+                self.transition += 1
+                if self.transition > 30:
+                    return
 
             display_mask = pygame.mask.from_surface(self.app.display)
             display_sillhouette = display_mask.to_surface(setcolor=(0, 0, 0, 128), unsetcolor=(0, 0, 0, 0))

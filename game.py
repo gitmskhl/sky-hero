@@ -305,7 +305,11 @@ def load():
 load()
 app = App()
 if level < 0:
-    Tour_1(app, screen).run()
+    current_tour = 1
+    tours = [Tour_1]
+    while current_tour - 1 < len(tours):
+        tours[current_tour - 1](app, screen).run()
+        current_tour += 1
 app.run()
 pygame.quit()
 sys.exit()
