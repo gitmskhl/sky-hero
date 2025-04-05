@@ -11,6 +11,7 @@ from scripts.spark import Spark
 from scripts.menu import MainMenu, StartMenu, SettingsMenu, AdvancedSettingsMenu
 from scripts.widgets import Pages
 from scripts.combo import Combo
+import gc
 
 from random import random
 from math import pi, cos, sin
@@ -27,6 +28,7 @@ level = 1
 pygame.init()
 class App:
     def __init__(self):
+        gc.collect()
         self.display = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
         self.display_2 = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = clock
