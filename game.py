@@ -12,7 +12,7 @@ from scripts.menu import MainMenu, StartMenu, SettingsMenu, AdvancedSettingsMenu
 from scripts.widgets import Pages
 from scripts import widgets
 from scripts.combo import Combo
-from tour import Tour_1, Tour_2
+from tour import Tour_1, Tour_2, Tour_3, Tour_4, Tour_5
 import gc
 
 from random import random
@@ -312,14 +312,15 @@ def load():
 load()
 app = App()
 if level < 0:
-    level = -2
-    current_tour = 2#1
-    tours = [Tour_1, Tour_2]
+    level = -5
+    current_tour = 5#1
+    tours = [Tour_1, Tour_2, Tour_3, Tour_4, Tour_5]
     while current_tour - 1 < len(tours):
         tours[current_tour - 1](app, screen).run()
         current_tour += 1
         level -= 1
-    level = 0
+    level = 1
+    app = App()
     
 app.run()
 pygame.quit()
