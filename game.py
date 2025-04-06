@@ -176,6 +176,7 @@ class App:
                     if self.transition > 30:
                         global level
                         level += 1
+                        save()
                         self.__init__()
             
             if self.dead > 60:
@@ -312,8 +313,8 @@ def load():
 load()
 app = App()
 if level < 0:
-    level = -5
-    current_tour = 5#1
+    level = -1
+    current_tour = 1
     tours = [Tour_1, Tour_2, Tour_3, Tour_4, Tour_5]
     while current_tour - 1 < len(tours):
         tours[current_tour - 1](app, screen).run()
@@ -321,6 +322,7 @@ if level < 0:
         level -= 1
     level = 1
     app = App()
+    save()
     
 app.run()
 pygame.quit()

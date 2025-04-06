@@ -739,11 +739,7 @@ class Tour_5:
                 if self.timer >= self.delta_time:
                     self.timer = 0
                     self.step += 1
-                    if self.step == 2:
-                        self.delta_time = 60 * 5
-                    elif self.step == 3:
-                        self.delta_time = 60
-                    elif self.step == 5:
+                    if self.step == 4:
                         self.delta_time = 60 * 5
                     else:
                         self.delta_time = 120
@@ -868,6 +864,7 @@ class Tour_5:
                 if self.app.dead == 0:
                     self.transition += 1
                 if self.transition > 30 and self.step > len(self.layouts):
+                    self.welcome_screen()
                     return
 
             display_mask = pygame.mask.from_surface(self.app.display)
@@ -878,15 +875,24 @@ class Tour_5:
             self.screen.blit(self.app.display_2, (0, 0))
             pygame.display.flip()
 
-'''
 
-        # layout 6
-        self.layout_6 = VerticalLayout(None, paddings=[0] * 4, space=0)
-        self.layout_6.setSize(self.screen.get_width(), self.screen.get_height())
-        texts = [
-            "The training for the game is now complete.",
-            "You are now ready to walk this challenging path on your own and defeat your enemies.",
-            "Good luck, warrior!"
-        ]
+    def welcome_screen(self):
+        surf = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+        surf.set_alpha(0)
+        alpha = 0
+        timer = 2
+        font = pygame.font.Font('fonts/Pacifico.ttf', 58)
+        while alpha != 256:
+            self.screen.fill((0, 0, 0))
+            surf.fill((0, 0, 0, 255))
+            self.app.clock.tick(60)
+            timer -= 1
+            if timer == 0:
+                alpha += 1
+                timer = 2
+                surf.set_alpha(alpha)
+            text = font.render("Let's start...", True, (255, 255, 255))
+            surf.blit(text, (self.screen.get_width() // 2 - text.get_width() // 2, self.screen.get_height() // 2 - text.get_height() // 2))
+            self.screen.blit(surf, (0, 0))
+            pygame.display.flip()
 
-'''
