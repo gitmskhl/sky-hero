@@ -12,6 +12,8 @@ YELLOW = (255, 255, 0)
 ORANGE = (255, 165, 0)
 MAGENTA = (255, 0, 255)
 
+NUM_HOVERED = 0
+
 class Widget:
     def __init__(self, root):
         self.showed = True
@@ -91,9 +93,11 @@ class Button(Widget):
         surf.blit(text, (self.rect.centerx - text.get_width() // 2, self.rect.centery - text.get_height()//2))
 
     def update(self, mouse_pos, clicked):
+        global NUM_HOVERED
         self.clicked = False
         if not self.showed: return
         if self.rect.collidepoint(mouse_pos):
+            NUM_HOVERED += 1
             self.color = self.colors[1]
             self.text_color = self.textColors[1]
             self.border_width = 0
@@ -240,12 +244,14 @@ class Slider(FloatWidget):
         self.value = value
 
     def update(self, mouse_pos, clicked):
+        global NUM_HOVERED
         if not self.showed: return
-        
-        if self.innerRect.collidepoint(mouse_pos) and clicked:
-            self.value = (mouse_pos[0] - self.innerRect.left) / self.innerRect.width * 100
-            self.drag = True
-            return
+        if self.innerRect.collidepoint(mouse_pos) :
+            NUM_HOVERED += 1
+            if clicked:
+                self.value = (mouse_pos[0] - self.innerRect.left) / self.innerRect.width * 100
+                self.drag = True
+                return
         if self.drag and not pygame.mouse.get_pressed()[0]:
             self.drag = False
         if self.drag:

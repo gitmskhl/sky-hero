@@ -12,7 +12,7 @@ class Tour_1:
         self.SCREEN_HEIGHT = self.screen.get_height()
         self.step = 0
         
-        DELTA_TIME = 1#6
+        DELTA_TIME = 2#6
 
         # layout 1
         self.layout_1 = VerticalLayout(None, paddings=[0] * 4, space=0)
@@ -99,10 +99,10 @@ class Tour_1:
         self.transition = 0
 
         # debug
-        self.timer = 0
-        self.step = 1
-        self.current_layout =self.layout_2
-        self.current_widget = self.widget_2
+#        self.timer = 0
+#        self.step = 1
+#        self.current_layout =self.layout_2
+#        self.current_widget = self.widget_2
         
     def run(self):
         while True:

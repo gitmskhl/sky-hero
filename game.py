@@ -10,6 +10,7 @@ from scripts.utils import load_image
 from scripts.spark import Spark
 from scripts.menu import MainMenu, StartMenu, SettingsMenu, AdvancedSettingsMenu
 from scripts.widgets import Pages
+from scripts import widgets
 from scripts.combo import Combo
 from tour import Tour_1
 import gc
@@ -140,11 +141,17 @@ class App:
         self.pause = True
         self.main_player.move = [0] * 4
         while self.pause:
+            widgets.NUM_HOVERED = 0
             self.clock.tick(60)
             screen.blit(copy_screen, (0, 0))
             mouse_pos = pygame.mouse.get_pos()
             self.main_menu.update(mouse_pos, False)
             self.main_menu.render(screen)
+            if widgets.NUM_HOVERED:
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+            else:
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.main_menu.update(mouse_pos, True)
