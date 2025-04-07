@@ -313,8 +313,8 @@ def load():
 load()
 app = App()
 if level < 0:
-    level = -1
-    current_tour = 1
+    level = -5
+    current_tour = 5
     tours = [Tour_1, Tour_2, Tour_3, Tour_4, Tour_5]
     while current_tour - 1 < len(tours):
         tours[current_tour - 1](app, screen).run()
