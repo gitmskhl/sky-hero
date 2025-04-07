@@ -2,13 +2,14 @@ import pygame
 import sys
 import pickle
 import os
+import copy
 from scripts.map import Map
 from scripts.player import Player
 from scripts.enemy import Enemy 
 from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT
 from scripts.utils import load_image
 from scripts.spark import Spark
-from scripts.menu import MainMenu, StartMenu, SettingsMenu, AdvancedSettingsMenu
+from scripts.menu import MainMenu, SelectLevelMenu, StartMenu, SettingsMenu, AdvancedSettingsMenu
 from scripts.widgets import Pages
 from scripts import widgets
 from scripts.combo import Combo
@@ -18,6 +19,7 @@ import gc
 from random import random
 from math import pi, cos, sin
 
+STATE = 'menu'
 
 if __name__ != "__main__":
 	exit(0)
@@ -64,40 +66,70 @@ class App:
         # menu
         size = (SCREEN_WIDTH, SCREEN_HEIGHT)
         if 'main_menu' not in self.__dict__:
-            self.main_menu = Pages(size)
+
+            # play menu
+            self.play_menu = Pages(size)
             
-            start_menu = StartMenu(self.main_menu, size)
-            start_menu.play_button.connect(self._play_game)
+            start_menu = StartMenu(self.play_menu, size)
+            start_menu.play_button.connect(self._continue_game)
             start_menu.new_game_button.connect(self._new_game)
             start_menu.exit_button.connect(self.exit_game)
 
-            settings_menu = SettingsMenu(self.main_menu, size)
-            settings_menu.effect_volume_slider.connect(lambda slider=settings_menu.effect_volume_slider: self._effectSliderMoved(slider))
-            settings_menu.effect_volume_slider.setValue(50)
-            settings_menu.volume_slider.connect(lambda slider=settings_menu.volume_slider: self._sliderMoved(slider))
-            settings_menu.volume_slider.setValue(50)
+            settings_menu_1 = SettingsMenu(self.play_menu, size)
+            settings_menu_1.effect_volume_slider.connect(lambda slider=settings_menu_1.effect_volume_slider: self._effectSliderMoved(slider))
+            settings_menu_1.effect_volume_slider.setValue(50)
+            settings_menu_1.volume_slider.connect(lambda slider=settings_menu_1.volume_slider: self._sliderMoved(slider))
+            settings_menu_1.volume_slider.setValue(50)
 
-            advanced_settings_menu = AdvancedSettingsMenu(self.main_menu, size)
-            advanced_settings_menu.ambience_slider.connect(lambda slider=advanced_settings_menu.ambience_slider: self._certainEffectSliderMoved(slider, 'ambience'))
-            advanced_settings_menu.ambience_slider.setValue(20)
-            advanced_settings_menu.jump_slider.connect(lambda slider=advanced_settings_menu.jump_slider: self._certainEffectSliderMoved(slider, 'jump'))
-            advanced_settings_menu.jump_slider.setValue(70)
-            advanced_settings_menu.dash_slider.connect(lambda slider=advanced_settings_menu.dash_slider: self._certainEffectSliderMoved(slider, 'dash'))
-            advanced_settings_menu.dash_slider.setValue(30)
-            advanced_settings_menu.hit_slider.connect(lambda slider=advanced_settings_menu.hit_slider: self._certainEffectSliderMoved(slider, 'hit'))
-            advanced_settings_menu.hit_slider.setValue(80)
-            advanced_settings_menu.shoot_slider.connect(lambda slider=advanced_settings_menu.shoot_slider: self._certainEffectSliderMoved(slider, 'shoot'))
-            advanced_settings_menu.shoot_slider.setValue(40)
+            advanced_settings_menu_1 = AdvancedSettingsMenu(self.play_menu, size)
+            advanced_settings_menu_1.ambience_slider.connect(lambda slider=advanced_settings_menu_1.ambience_slider: self._certainEffectSliderMoved(slider, 'ambience'))
+            advanced_settings_menu_1.ambience_slider.setValue(20)
+            advanced_settings_menu_1.jump_slider.connect(lambda slider=advanced_settings_menu_1.jump_slider: self._certainEffectSliderMoved(slider, 'jump'))
+            advanced_settings_menu_1.jump_slider.setValue(70)
+            advanced_settings_menu_1.dash_slider.connect(lambda slider=advanced_settings_menu_1.dash_slider: self._certainEffectSliderMoved(slider, 'dash'))
+            advanced_settings_menu_1.dash_slider.setValue(30)
+            advanced_settings_menu_1.hit_slider.connect(lambda slider=advanced_settings_menu_1.hit_slider: self._certainEffectSliderMoved(slider, 'hit'))
+            advanced_settings_menu_1.hit_slider.setValue(80)
+            advanced_settings_menu_1.shoot_slider.connect(lambda slider=advanced_settings_menu_1.shoot_slider: self._certainEffectSliderMoved(slider, 'shoot'))
+            advanced_settings_menu_1.shoot_slider.setValue(40)
+
+
+            # main menu
+            self.main_menu = Pages(size)
+
+            settings_menu_2 = SettingsMenu(self.main_menu, size, fontcolor=(255, 255, 255))
+            settings_menu_2.effect_volume_slider.connect(lambda slider=settings_menu_2.effect_volume_slider: self._effectSliderMoved(slider))
+            settings_menu_2.effect_volume_slider.setValue(50)
+            settings_menu_2.volume_slider.connect(lambda slider=settings_menu_2.volume_slider: self._sliderMoved(slider))
+            settings_menu_2.volume_slider.setValue(50)
+
+            advanced_settings_menu_2 = AdvancedSettingsMenu(self.main_menu, size, fontcolor=(255, 255, 255))
+            advanced_settings_menu_2.ambience_slider.connect(lambda slider=advanced_settings_menu_2.ambience_slider: self._certainEffectSliderMoved(slider, 'ambience'))
+            advanced_settings_menu_2.ambience_slider.setValue(20)
+            advanced_settings_menu_2.jump_slider.connect(lambda slider=advanced_settings_menu_2.jump_slider: self._certainEffectSliderMoved(slider, 'jump'))
+            advanced_settings_menu_2.jump_slider.setValue(70)
+            advanced_settings_menu_2.dash_slider.connect(lambda slider=advanced_settings_menu_2.dash_slider: self._certainEffectSliderMoved(slider, 'dash'))
+            advanced_settings_menu_2.dash_slider.setValue(30)
+            advanced_settings_menu_2.hit_slider.connect(lambda slider=advanced_settings_menu_2.hit_slider: self._certainEffectSliderMoved(slider, 'hit'))
+            advanced_settings_menu_2.hit_slider.setValue(80)
+            advanced_settings_menu_2.shoot_slider.connect(lambda slider=advanced_settings_menu_2.shoot_slider: self._certainEffectSliderMoved(slider, 'shoot'))
+            advanced_settings_menu_2.shoot_slider.setValue(40)
+
+
+
+            mmenu = MainMenu(self, self.main_menu, size)
+            select_level_menu = SelectLevelMenu(self, self.main_menu, size)
 
             self.sfx_sliders = {
-                'ambience': advanced_settings_menu.ambience_slider,
-                'jump': advanced_settings_menu.jump_slider,
-                'dash': advanced_settings_menu.dash_slider,
-                'hit': advanced_settings_menu.hit_slider,
-                'shoot': advanced_settings_menu.shoot_slider
+                'ambience': advanced_settings_menu_1.ambience_slider,
+                'jump': advanced_settings_menu_1.jump_slider,
+                'dash': advanced_settings_menu_1.dash_slider,
+                'hit': advanced_settings_menu_1.hit_slider,
+                'shoot': advanced_settings_menu_1.shoot_slider
             }
             
-            self.main_menu.addLayouts([start_menu, settings_menu, advanced_settings_menu])
+            self.play_menu.addLayouts([start_menu, settings_menu_1, advanced_settings_menu_1])
+            self.main_menu.addLayouts([mmenu, settings_menu_2, advanced_settings_menu_2, select_level_menu])
             # enemy icon
             enemy_img = self.map.resources['spawners'][1]
             self.small_enemy_img = pygame.transform.scale(enemy_img, (enemy_img.get_width() / 1.5, enemy_img.get_height() / 1.5))
@@ -109,7 +141,7 @@ class App:
         pygame.quit()
         sys.exit()
 
-    def _play_game(self):
+    def _continue_game(self):
         self.pause = False
         self.running = True
         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
@@ -137,16 +169,13 @@ class App:
         for pos in self.map.get_positions('spawners', 1, keep=False):
             self.enemies.append(Enemy('entities/enemy/', *pos, self.map, self))
 
-    def menu_run(self):
-        if level < 0:
-            self.main_menu.layouts[0].new_game_button.hide()
-        copy_screen = screen.copy()
-        self.pause = True
-        self.main_player.move = [0] * 4
-        while self.pause:
+    def main_menu_run(self):
+        if not hasattr(self, 'main_menu_backgroun'):
+            self.main_menu_background = load_image('images/menu_bg.jpeg', scale=1, size=screen.get_size())
+        while True:
             widgets.NUM_HOVERED = 0
             self.clock.tick(60)
-            screen.blit(copy_screen, (0, 0))
+            screen.blit(self.main_menu_background, (0, 0))
             mouse_pos = pygame.mouse.get_pos()
             self.main_menu.update(mouse_pos, False)
             self.main_menu.render(screen)
@@ -160,7 +189,32 @@ class App:
                     self.main_menu.update(mouse_pos, True)
             pygame.display.update()
 
+    def play_menu_run(self):
+        if level < 0:
+            self.play_menu.layouts[0].new_game_button.hide()
+        copy_screen = screen.copy()
+        self.pause = True
+        self.main_player.move = [0] * 4
+        while self.pause:
+            widgets.NUM_HOVERED = 0
+            self.clock.tick(60)
+            screen.blit(copy_screen, (0, 0))
+            mouse_pos = pygame.mouse.get_pos()
+            self.play_menu.update(mouse_pos, False)
+            self.play_menu.render(screen)
+            if widgets.NUM_HOVERED:
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+            else:
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    self.play_menu.update(mouse_pos, True)
+            pygame.display.update()
+
     def run(self):
+        if STATE == 'menu':
+            self.main_menu_run()
         pygame.mixer.music.load('sfx/music.wav')
         pygame.mixer.music.set_volume(.5)
         pygame.mixer.music.play(-1)
@@ -270,7 +324,7 @@ class App:
                         self.main_player.flip = False
                     elif event.key == pygame.K_ESCAPE:
                         # self.running = False
-                        self.menu_run()
+                        self.play_menu_run()
                     elif event.key == pygame.K_SPACE:
                         self.main_player.jump()
                     elif event.key == pygame.K_x:
@@ -299,6 +353,20 @@ class App:
             screen.blit(self.display_2, (0, 0))
             pygame.display.flip()
 
+    def lesson_tour_run(self):
+        global level, STATE
+        level = -1
+        current_tour = 1
+        tour_classes = [Tour_1, Tour_2, Tour_3, Tour_4, Tour_5]
+        while current_tour - 1 < len(tour_classes):
+            tour_classes[current_tour - 1](app, screen).run()
+            current_tour += 1
+            level -= 1
+        level = 1
+        app.__init__()
+        save()
+        STATE = 'game'
+
 def save():
     global level
     print('saving: level = %d' % level)
@@ -317,16 +385,7 @@ def load():
 load()
 app = App()
 if level < 0:
-    level = -1
-    current_tour = 1
-    tour_classes = [Tour_1, Tour_2, Tour_3, Tour_4, Tour_5]
-    while current_tour - 1 < len(tour_classes):
-        tour_classes[current_tour - 1](app, screen).run()
-        current_tour += 1
-        level -= 1
-    level = 1
-    app = App()
-    save()
+    app.lesson_tour_run()
     
 app.run()
 pygame.quit()

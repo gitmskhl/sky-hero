@@ -170,11 +170,12 @@ class Tour:
                         if self.step == self.jump_step and self.first_jump:
                             self.current_widget.finished = True
                     elif event.key == pygame.K_ESCAPE and self.step >= self.menu_step:
-                        self.app.menu_run()
+                        self.app.play_menu_run()
                     elif event.key == pygame.K_x and self.step >= self.attack_step:
                         self.app.main_player.dash()
                         if self.step == self.attack_step and self.first_attack:
-                            self.current_widget.finished = True
+                            if not self.kill_enemies or len(self.app.enemies) == 0:
+                                self.current_widget.finished = True
 
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT and self.step >= self.move_step:
