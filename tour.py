@@ -24,7 +24,7 @@ class Tour:
         self.first_jump = True
         self.first_attack = True
 
-        self.menu_step = Tour.inf
+        self.menu_step = 1
         self.enemy_step = 1
         self.font = pygame.font.Font("fonts/Pacifico.ttf", 58)
 
@@ -44,8 +44,6 @@ class Tour:
         self.layouts = [getattr(self, "layout_" + str(i)) for i in range(2, num_layouts + 1)]
         self.widgets = [getattr(self, "widget_" + str(i)) for i in range(2, num_layouts + 1)]
         while True:
-            if self.current_widget == self.widget_4:
-                pass
             self.app.clock.tick(60)
             self.app.display.fill((0, 0, 0, 0))
 
@@ -409,6 +407,7 @@ class Tour_5(Tour):
         self.jump_step = 2
         self.attack_step = 2
         self.enemy_step = 2
+        self.menu_step = 1
         self.start_delay_time = 60 * 2
         self.kill_enemies = True
         self.first_jump = self.first_move = self.first_attack = False

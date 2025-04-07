@@ -126,7 +126,6 @@ class App:
         for sfx_name, sfx in self.sfx.items():
             sfx.set_volume(slider.value / 100)
             self.sfx_sliders[sfx_name].setValue(slider.value)
-        
 
     def _sliderMoved(self, slider):
         pygame.mixer.music.set_volume(slider.value / 100)
@@ -137,6 +136,8 @@ class App:
             self.enemies.append(Enemy('entities/enemy/', *pos, self.map, self))
 
     def menu_run(self):
+        if level < 0:
+            self.main_menu.layouts[0].new_game_button.hide()
         copy_screen = screen.copy()
         self.pause = True
         self.main_player.move = [0] * 4
@@ -313,11 +314,11 @@ def load():
 load()
 app = App()
 if level < 0:
-    level = -5
-    current_tour = 5
-    tours = [Tour_1, Tour_2, Tour_3, Tour_4, Tour_5]
-    while current_tour - 1 < len(tours):
-        tours[current_tour - 1](app, screen).run()
+    level = -1
+    current_tour = 1
+    tour_classes = [Tour_1, Tour_2, Tour_3, Tour_4, Tour_5]
+    while current_tour - 1 < len(tour_classes):
+        tour_classes[current_tour - 1](app, screen).run()
         current_tour += 1
         level -= 1
     level = 1
