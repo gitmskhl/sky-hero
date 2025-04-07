@@ -83,7 +83,11 @@ class Tour:
             if self.app.dead > 0 or self.app.main_player.dead:
                 self.app.dead += 1
                 if self.app.dead > 100:
+                    self.last_enemies = self.app.enemies
                     self.app.__init__()
+                    self.app.enemies = self.last_enemies
+                    for enemy in self.app.enemies:
+                        enemy.map = self.app.map
                     self.app.dead = 0
                     self.transition = -30
             else:
