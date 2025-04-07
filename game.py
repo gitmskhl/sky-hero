@@ -112,6 +112,8 @@ class App:
     def _play_game(self):
         self.pause = False
         self.running = True
+        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
 
     def _new_game(self):
         self.__init__()
@@ -233,6 +235,7 @@ class App:
                         self.sparks.append(Spark(p[0], speed_spark, angle=angle_spark))
                         self.map.particles.add(p[0], [speed_particle * cos(angle_particle), speed_particle * sin(angle_particle)])
                     self.dead = 1
+                    self.main_player.pos = [10 ** 5, 10 ** 5]
                 if p[2] > 360:
                     fordel.append(p)
                 self.display.blit(
@@ -252,8 +255,8 @@ class App:
                 self.sparks.remove(spark)
 
 
-
-            self.map.move_camera(self.main_player.pos[0] - SCREEN_WIDTH // 2, self.main_player.pos[1] - SCREEN_HEIGHT // 2)
+            if self.dead == 0:
+                self.map.move_camera(self.main_player.pos[0] - SCREEN_WIDTH // 2, self.main_player.pos[1] - SCREEN_HEIGHT // 2)
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:

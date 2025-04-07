@@ -24,7 +24,7 @@ class StartMenu(Menu):
     def __init__(self, pages: Pages, size):
         super().__init__(pages, size, paddings=[50, size[0] // 4, 50, size[0] // 4], space=10)
         br = 40
-        self.play_button = Button(self.root, text='Play', border_radius=br)
+        self.play_button = Button(self.root, text='Continue', border_radius=br)
         self.new_game_button = Button(self.root, text='New Game', border_radius=br)
         self.settings_button = Button(self.root, text='Settings', border_radius=br)
         self.settings_button.connect(lambda: pages.setPage(1))
