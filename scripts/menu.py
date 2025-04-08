@@ -130,11 +130,7 @@ class MainMenu(Menu):
         
         # select level button
         self.select_level_button = Button(self.root, text='Levels', border_radius=br)
-        self.select_level_button.connect(lambda: pages.setPage(3))
-
-        # settings button
-        self.settings_button = Button(self.root, text='Settings', border_radius=br)
-        self.settings_button.connect(lambda: pages.setPage(1))
+        self.select_level_button.connect(lambda: pages.setPage(1))
 
         # exit button
         self.exit_button = Button(self.root, text='Exit', border_radius=br)
@@ -143,7 +139,6 @@ class MainMenu(Menu):
         self.addWidget(self.play_button)
         self.addWidget(self.new_game_button)
         self.addWidget(self.select_level_button)
-        self.addWidget(self.settings_button)
         self.addWidget(self.exit_button)
     
     def stop_main_menu(self):

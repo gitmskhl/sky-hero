@@ -43,7 +43,8 @@ class Tour:
         num_layouts = len([1 for attrname in self.__dict__ if attrname.startswith("layout_")])
         self.layouts = [getattr(self, "layout_" + str(i)) for i in range(2, num_layouts + 1)]
         self.widgets = [getattr(self, "widget_" + str(i)) for i in range(2, num_layouts + 1)]
-        while True:
+        self.app.tour_running = True
+        while self.app.tour_running:
             self.app.clock.tick(60)
             self.app.display.fill((0, 0, 0, 0))
 

@@ -58,6 +58,7 @@ class FloatWidget(Widget):
         else:
             self.innerRect.bottom = self.rect.bottom
 
+
     def dispose(self):
         if self.positions:
             self._dispose_positions()
@@ -412,7 +413,7 @@ class Label(FloatWidget):
 
 class BlinkingLabel(Label):
     def __init__(self, root, text, dx=0, dy=0, positions=None, fontsize=50, font=None, color=BLACK, blinktime=50, fixedSizes=(False, False)):
-        super().__init__(root, text, dx, dy, positions, fontsize, font, color, fixedSizes)
+        super().__init__(root, text, dx, dy, positions, fontsize, font, color, fixedSizes=fixedSizes)
         self.blinking = True
         self.opacity = 255
         self.blinktime = blinktime
