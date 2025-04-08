@@ -15,7 +15,9 @@ MAGENTA = (255, 0, 255)
 NUM_HOVERED = 0
 
 class Widget:
-    def __init__(self, root):
+    def __init__(self, root, fixedSizes: list[bool]=None):
+        self.root = root
+        self.fixedSizes = fixedSizes
         self.showed = True
         self.callback = None
     
@@ -36,8 +38,8 @@ class Widget:
         raise NotImplementedError
     
 class FloatWidget(Widget):
-    def __init__(self, root, innerRect, positions=None):
-        super().__init__(root)
+    def __init__(self, root, innerRect, positions=None, fixedSizes=(False, False)):
+        super().__init__(root, fixedSizes)
         self.innerRect = innerRect
         self.dx, self.dy = self.innerRect.topleft
         self.positions = list(positions) if positions else None
@@ -65,14 +67,19 @@ class FloatWidget(Widget):
 class Button(Widget):
     defaultColors = [BLACK, YELLOW]
     defaultTextColors = [WHITE, BLACK] 
-    def __init__(self, root, text, x=0, y=0, w=0, h=0, colors=None, textColors=None, fontsize=60, font=None, border_radius=-1):
+    def __init__(self, root, text, x=0, y=0, w=0, h=0, colors=None, textColors=None, fontsize='auto', font=None, border_radius=-1, fixedSizes=(False, False)):
         '''
             colors / textColors = [defaultColor, hoverColor]
         '''
-        super().__init__(root)
+        super().__init__(root, fixedSizes)
         self.root = root
         self.rect = pygame.Rect(x, y, w, h)
+        self.dynamic_fontsize = False
+        if fontsize == 'auto':
+            fontsize = 60
+            self.dynamic_fontsize = True
         self.font = font if font else pygame.font.Font('fonts/Amatic-Bold.ttf', fontsize)
+        
         self.colors = colors if colors else Button.defaultColors
         self.textColors = textColors if textColors else Button.defaultTextColors
         self.color = self.colors[0]
@@ -90,6 +97,7 @@ class Button(Widget):
             color = list(self.color) + [opacity]
         text = self.font.render(self.text, True, text_color)
         pygame.draw.rect(surf, color, self.rect, border_radius=self.border_radius)
+
         surf.blit(text, (self.rect.centerx - text.get_width() // 2, self.rect.centery - text.get_height()//2))
 
     def update(self, mouse_pos, clicked):
@@ -111,15 +119,17 @@ class Button(Widget):
             return False
 
     def dispose(self):
-        pass
+        if self.dynamic_fontsize:
+            fontsize = int(self.rect.height / 1.2)
+            self.font = pygame.font.Font('fonts/Amatic-Bold.ttf', fontsize)
 
 
 class Layout(Widget):
-    def __init__(self, root, paddings, space):
+    def __init__(self, root, paddings, space, fixedSizes=(False, False)):
         '''
             paddings = [Up, Right, Down, Left]
         '''
-        super().__init__(root)
+        super().__init__(root, fixedSizes)
         self.root = root
         self.rect = pygame.Rect(0, 0, 0, 0)
         self.widgets = []
@@ -150,31 +160,60 @@ class Layout(Widget):
 
 
 class VerticalLayout(Layout):
-    def __init__(self, root, paddings=[0] * 4, space=0):
-        super().__init__(root, paddings, space)
+    def __init__(self, root, paddings=[0] * 4, space=0, fixedSizes=(False, False)):
+        super().__init__(root, paddings, space, fixedSizes)
 
     def dispose(self):
-        n = len([widget for widget in self.widgets if widget.showed])
-        if not self.showed or n == 0: return
-        h = (self.rect.height - self.paddings[0] - self.paddings[2] - self.space * (n - 1)) / n
+        if not self.showed: return
+        FSH = sum([widget.rect.height for widget in self.widgets if widget.showed and widget.fixedSizes[1]])
+        n = len([1 for widget in self.widgets if widget.showed and not widget.fixedSizes[1]])
+        n_showed = len([1 for widget in self.widgets if widget.showed])
+        h = 0
+        if n > 0:
+            h = (self.rect.height - self.paddings[0] - self.paddings[2] - FSH - self.space * (n_showed - 1)) / n
         w = self.rect.width - self.paddings[1] - self.paddings[3]
         x = self.rect.x + self.paddings[3]
         y = self.rect.y + self.paddings[0]
         for widget in self.widgets:
             if not widget.showed: continue
             widget.rect.topleft = (x, y)
-            widget.rect.width = w
-            widget.rect.height = h
-            y += h + self.space
+            if not widget.fixedSizes[0]:
+                widget.rect.width = w
+            if not widget.fixedSizes[1]:
+                widget.rect.height = h
+            y += widget.rect.height + self.space
         for widget in self.widgets:
             widget.dispose()
 
 
+
 class HorizontalLayout(Layout):
-    def __init__(self, root, paddings=[0] * 4, space=0):
-        super().__init__(root, paddings, space)
+    def __init__(self, root, paddings=[0] * 4, space=0, fixedSizes=(False, False)):
+        super().__init__(root, paddings, space, fixedSizes)
 
     def dispose(self):
+        if not self.showed: return
+        FSW = sum([widget.rect.width for widget in self.widgets if widget.showed and widget.fixedSizes[0]])
+        n = len([1 for widget in self.widgets if widget.showed and not widget.fixedSizes[0]])
+        n_showed = len([1 for widget in self.widgets if widget.showed])
+        w = 0
+        if n > 0:
+            w = (self.rect.width - self.paddings[3] - self.paddings[1] - FSW - self.space * (n_showed - 1)) / n
+        h = self.rect.height - self.paddings[0] - self.paddings[2]
+        x = self.rect.x + self.paddings[3]
+        y = self.rect.y + self.paddings[0]
+        for widget in self.widgets:
+            if not widget.showed: continue
+            widget.rect.topleft = (x, y)
+            if not widget.fixedSizes[0]:
+                widget.rect.width = w
+            if not widget.fixedSizes[1]:
+                widget.rect.height = h
+            x += widget.rect.width + self.space
+        for widget in self.widgets:
+            widget.dispose()
+
+    def last_dispose(self):
         n = len([widget for widget in self.widgets if widget.showed])
         if not self.showed or n == 0: return
         w = (self.rect.width - self.paddings[3] - self.paddings[1] - self.space * (n - 1)) / n
@@ -190,11 +229,79 @@ class HorizontalLayout(Layout):
         for widget in self.widgets:
             widget.dispose()
 
+class GridLayout(Widget):
+    def __init__(self, root, paddings=[0] * 4, dims=(0, 0), vspace=0, hspace=0, fixedSizes=(False, False)):
+        super().__init__(root, fixedSizes)
+        self.root = root
+        self.rect = pygame.Rect(0, 0, 0, 0)
+        self.paddings = list(paddings)
+
+        self.grid = [[None] * dims[1] for _ in range(dims[0])]
+        self.dims = list(dims)
+        self.vspace = vspace
+        self.hspace = hspace
+    
+    def addWidget(self, widget, i, j):
+        '''
+        i from 1 to dims[0]
+        j from 1 to dims[1]
+        '''
+        if i <= 0 or j <= 0:
+            raise 'Position elements must be positive. Got: %s' % (i, j)
+        if i > self.dims[0] or j > self.dims[1]:
+            raise 'There is no such row: dims=%s but you want to place it here: %s' % (self.dims, (i, j))
+        self.grid[i - 1][j - 1] = widget
+    
+    def newRow(self):
+        self.grid.append([None] * self.dims[1])
+    
+    def newColumn(self):
+        for row in self.grid:
+            row.append(None)
+    
+    def update(self, mouse_pos, clicked):
+        if not self.showed: return
+        for row in self.grid:
+            for widget in row:
+                if widget:
+                    widget.update(mouse_pos, clicked)
+    
+    def render(self, surf, opacity=None):
+        if not self.showed: return
+        for row in self.grid:
+            for widget in row:
+                if widget:
+                    widget.render(surf, opacity)
+
+    def dispose(self):
+        W, H = self.rect.size
+        w = (W - self.hspace * (self.dims[1] - 1) - self.paddings[3] - self.paddings[1]) / self.dims[1]
+        h = (H - self.vspace * (self.dims[0] - 1) - self.paddings[0] - self.paddings[2]) / self.dims[0]
+        
+        y = self.rect.y + self.paddings[0]
+        for i in range(self.dims[0]):
+            x = self.rect.x + self.paddings[3]
+            for j in range(self.dims[1]):
+                if self.grid[i][j] is not None:
+                    self.grid[i][j].rect.topleft = (x, y)
+                    self.grid[i][j].rect.width = w
+                    self.grid[i][j].rect.height = h
+                x += w + self.hspace    
+            y += h + self.vspace
+        
+        for row in self.grid:
+            for widget in row:
+                if widget:
+                    widget.dispose()
+
+
+
+
 class CheckBox(FloatWidget):
     defaultActiveColor = ORANGE
     defaultBorderColors = [WHITE, BLUE]
-    def __init__(self, root, w, h, dx=0, dy=0, positions=['left', 'top'], borderColors=None, activeColor=None):
-        super().__init__(root, pygame.Rect(dx, dy, w, h), positions)
+    def __init__(self, root, w, h, dx=0, dy=0, positions=['left', 'top'], borderColors=None, activeColor=None, fixedSizes=(False, False)):
+        super().__init__(root, pygame.Rect(dx, dy, w, h), positions, fixedSizes)
         self.root = root
         self.w = w
         self.h = h
@@ -229,8 +336,8 @@ class CheckBox(FloatWidget):
 class Slider(FloatWidget):
     defaultSliderColors = [GRAY, MAGENTA]
     defaultHandleColor = WHITE
-    def __init__(self, root, w, h, dx=0, dy=0, positions=['left', 'center'], r=8, border_radius=-1):
-        super().__init__(root, pygame.Rect(dx, dy, w, h), positions)
+    def __init__(self, root, w, h, dx=0, dy=0, positions=['left', 'center'], r=8, border_radius=-1, fixedSizes=(False, False)):
+        super().__init__(root, pygame.Rect(dx, dy, w, h), positions, fixedSizes)
         self.w = w
         self.h = h
         self.r = r
@@ -291,12 +398,12 @@ class Slider(FloatWidget):
         )
 
 class Label(FloatWidget):
-    def __init__(self, root, text, dx=0, dy=0, positions=None, fontsize=50, font=None, color=BLACK, size=None):
+    def __init__(self, root, text, dx=0, dy=0, positions=None, fontsize=50, font=None, color=BLACK, size=None, fixedSizes=(False, False)):
         self.rect = pygame.Rect(0, 0, 0, 0)
         self.font = font if font else pygame.font.Font('fonts/Pacifico.ttf', fontsize)
         self.rendered_text = self.font.render(text, True, color)
         size = size if size else self.rendered_text.get_size()
-        super().__init__(root, pygame.Rect(dx, dy, *size), positions)
+        super().__init__(root, pygame.Rect(dx, dy, *size), positions, fixedSizes)
     
     def update(self, mouse_pos, clicked): pass
 
@@ -304,8 +411,8 @@ class Label(FloatWidget):
         surf.blit(self.rendered_text, self.innerRect.topleft)
 
 class BlinkingLabel(Label):
-    def __init__(self, root, text, dx=0, dy=0, positions=None, fontsize=50, font=None, color=BLACK, blinktime=50):
-        super().__init__(root, text, dx, dy, positions, fontsize, font, color)
+    def __init__(self, root, text, dx=0, dy=0, positions=None, fontsize=50, font=None, color=BLACK, blinktime=50, fixedSizes=(False, False)):
+        super().__init__(root, text, dx, dy, positions, fontsize, font, color, fixedSizes)
         self.blinking = True
         self.opacity = 255
         self.blinktime = blinktime

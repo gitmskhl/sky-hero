@@ -37,6 +37,7 @@ class App:
         self.display_2 = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = clock
         self.running = True
+        self.level = level
         self.map = Map(level)
         self.main_player = Player('entities/player/', *self.map.start_pos(), self.map, self)
         self._init_enemies()

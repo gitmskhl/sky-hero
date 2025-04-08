@@ -1,5 +1,7 @@
 import pygame
+import os
 import random
+import math
 
 if __name__ == "__main__":
     from widgets import *
@@ -12,7 +14,7 @@ class Menu(VerticalLayout):
         self.root = root = pages.ml
         padding = size[0] // 4
         paddings = paddings if paddings else [50, padding, 50, padding]
-        super().__init__(root, paddings=paddings, space=10)
+        super().__init__(root, paddings=paddings, space=space)
         self.showed = False
         self.size = size
 
@@ -113,11 +115,6 @@ class AdvancedSettingsMenu(Menu):
         self.back_button.connect(lambda: pages.setPage(1))
         self.addWidget(self.back_button)
 
-class SelectLevelMenu(Menu):
-    def __init__(self, app, pages: Pages, size):
-        super().__init__(pages, size, paddings=[50, size[0] // 4, 50, size[0] // 4], space=10)
-        pass
-
 class MainMenu(Menu):
     # 0 - this menu
     # 1 - settings
@@ -148,7 +145,46 @@ class MainMenu(Menu):
         self.addWidget(self.settings_button)
         self.addWidget(self.exit_button)
     
- 
+
+class SelectLevelMenu(Menu):
+    def __init__(self, app, pages: Pages, size):
+        super().__init__(pages, size, paddings=[50, 20, 50, 20], space=200)
+        self.app = app
+        br = 40
+
+        # grid
+        nlevels = len([1 for name in os.listdir("maps") if int(name[9:-5]) > 0])
+        num_columns = 3
+        num_rows = math.ceil(nlevels / num_columns)
+        dims = (num_rows, num_columns)
+        self.levels_grid_layout = GridLayout(self.root, [0] * 4, dims=dims, hspace=10, vspace=20)
+        q = 1
+        for i in range(1, dims[0] + 1):
+            for j in range(1, dims[1] + 1):
+                colors = [(0, 150, 0), (0, 255, 0)]
+                if app.level < q:
+                    colors = [(200, 0, 0), (255, 0, 0)]
+                elif app.level == q:
+                    colors = [(0, 0, 150), (0, 0, 255)]
+
+                button = Button(
+                    self.root, 
+                    f'Level {q}', 
+                    colors=colors, 
+                    textColors=[(255,) * 3] * 2,
+                    border_radius=br,
+                    fontsize='auto'
+                )
+                self.levels_grid_layout.addWidget(button, i, j)
+                q += 1
+
+        self.back_button = Button(self.root, h=80, text='Back', border_radius=br, fixedSizes=(False, True))
+        self.back_button.connect(lambda: pages.setPage(0))
+        
+        self.addWidget(self.levels_grid_layout)
+        self.addWidget(self.back_button)
+
+
 
 if __name__ == "__main__":
     screen = pygame.display.set_mode((800, 600), pygame.NOFRAME)
