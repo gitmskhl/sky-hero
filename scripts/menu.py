@@ -30,7 +30,7 @@ class StartMenu(Menu):
         self.new_game_button = Button(self.root, text='Restart', border_radius=br)
         self.settings_button = Button(self.root, text='Settings', border_radius=br)
         self.settings_button.connect(lambda: pages.setPage(1))
-        self.exit_button = Button(self.root, text='Exit', border_radius=br)
+        self.exit_button = Button(self.root, text='Main menu', border_radius=br)
         self.addWidget(self.play_button)
         self.addWidget(self.new_game_button)
         self.addWidget(self.settings_button)
@@ -125,6 +125,7 @@ class MainMenu(Menu):
         self.app = app
         br = 40
         self.play_button = Button(self.root, text='Play', border_radius=br)
+        self.play_button.connect(self.app.go_to_game)
         self.new_game_button = Button(self.root, text='New Game', border_radius=br)
         
         # select level button
@@ -145,6 +146,8 @@ class MainMenu(Menu):
         self.addWidget(self.settings_button)
         self.addWidget(self.exit_button)
     
+    def stop_main_menu(self):
+        self.app.main_menu_running = False
 
 class SelectLevelMenu(Menu):
     def __init__(self, app, pages: Pages, size):
@@ -153,14 +156,16 @@ class SelectLevelMenu(Menu):
         br = 40
 
         # grid
+        self.last_level = app.level
         nlevels = len([1 for name in os.listdir("maps") if int(name[9:-5]) > 0])
-        num_columns = 3
+        self.num_columns = num_columns = 3
         num_rows = math.ceil(nlevels / num_columns)
         dims = (num_rows, num_columns)
         self.levels_grid_layout = GridLayout(self.root, [0] * 4, dims=dims, hspace=10, vspace=20)
         q = 1
         for i in range(1, dims[0] + 1):
             for j in range(1, dims[1] + 1):
+                if q > nlevels: break
                 colors = [(0, 150, 0), (0, 255, 0)]
                 if app.level < q:
                     colors = [(200, 0, 0), (255, 0, 0)]
@@ -183,8 +188,28 @@ class SelectLevelMenu(Menu):
         
         self.addWidget(self.levels_grid_layout)
         self.addWidget(self.back_button)
-
-
+    
+    def update(self, mouse_pos, clicked):
+        if not self.showed: return
+        super().update(mouse_pos, clicked)
+        if self.last_level != self.app.level:
+            self.last_level = self.app.level
+            nlevels = len([1 for name in os.listdir("maps") if int(name[9:-5]) > 0])
+            num_columns = self.num_columns
+            num_rows = math.ceil(nlevels / num_columns)
+            dims = (num_rows, num_columns)
+            q = 1
+            for i in range(1, dims[0] + 1):
+                for j in range(1, dims[1] + 1):
+                    if q > nlevels: break
+                    colors = [(0, 150, 0), (0, 255, 0)]
+                    if self.app.level < q:
+                        colors = [(200, 0, 0), (255, 0, 0)]
+                    elif self.app.level == q:
+                        colors = [(0, 0, 150), (0, 0, 255)]
+                    
+                    self.levels_grid_layout.grid[i - 1][j - 1].colors = colors
+                    q += 1
 
 if __name__ == "__main__":
     screen = pygame.display.set_mode((800, 600), pygame.NOFRAME)

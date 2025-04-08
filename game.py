@@ -74,7 +74,7 @@ class App:
             start_menu = StartMenu(self.play_menu, size)
             start_menu.play_button.connect(self._continue_game)
             start_menu.new_game_button.connect(self._new_game)
-            start_menu.exit_button.connect(self.exit_game)
+            start_menu.exit_button.connect(self.go_to_main_menu)
 
             settings_menu_1 = SettingsMenu(self.play_menu, size)
             settings_menu_1.effect_volume_slider.connect(lambda slider=settings_menu_1.effect_volume_slider: self._effectSliderMoved(slider))
@@ -134,8 +134,29 @@ class App:
             # enemy icon
             enemy_img = self.map.resources['spawners'][1]
             self.small_enemy_img = pygame.transform.scale(enemy_img, (enemy_img.get_width() / 1.5, enemy_img.get_height() / 1.5))
+            
         self.pause = False
         self.combo = Combo('COMBO')
+
+    def go_to_main_menu(self):
+        global STATE
+        STATE = 'menu'
+        self.pause = False
+        self.running = False
+        pygame.mixer.music.stop()
+        for sfx in self.sfx.values():
+            sfx.stop()
+
+    def go_to_game(self):
+        global STATE
+        STATE = 'game'
+        self.pause = False
+        self.running = True
+        self.main_menu_running = False
+
+    def set_state(self, state):
+        global STATE
+        STATE = state
 
     def exit_game(self):
         save()
@@ -173,7 +194,8 @@ class App:
     def main_menu_run(self):
         if not hasattr(self, 'main_menu_backgroun'):
             self.main_menu_background = load_image('images/menu_bg.jpeg', scale=1, size=screen.get_size())
-        while True:
+        self.main_menu_running = True
+        while self.main_menu_running:
             widgets.NUM_HOVERED = 0
             self.clock.tick(60)
             screen.blit(self.main_menu_background, (0, 0))
@@ -214,8 +236,19 @@ class App:
             pygame.display.update()
 
     def run(self):
-        if STATE == 'menu':
-            self.main_menu_run()
+        while True:
+            if STATE == 'menu':
+                self.main_menu_run()
+            else:
+                self.run_game()
+        
+
+    def run_game(self):
+        global level, STATE
+        if level < 0:
+            self.lesson_tour_run()
+        STATE = 'game'
+        self.__init__()
         pygame.mixer.music.load('sfx/music.wav')
         pygame.mixer.music.set_volume(.5)
         pygame.mixer.music.play(-1)
@@ -232,7 +265,6 @@ class App:
                 if self.win_timer > 60:
                     self.transition += 1
                     if self.transition > 30:
-                        global level
                         level += 1
                         save()
                         self.__init__()
@@ -385,8 +417,6 @@ def load():
 
 load()
 app = App()
-if level < 0:
-    app.lesson_tour_run()
     
 app.run()
 pygame.quit()
