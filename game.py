@@ -3,6 +3,7 @@ import sys
 import pickle
 import os
 import copy
+from scripts.menu import ButtonsMenu
 from scripts.map import Map
 from scripts.player import Player
 from scripts.enemy import Enemy 
@@ -193,6 +194,14 @@ class App:
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
             for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if not isinstance(self.main_menu.current_layout, ButtonsMenu): continue
+                    if event.key == pygame.K_UP:
+                        self.main_menu.selectedUp()
+                    elif event.key == pygame.K_DOWN:
+                        self.main_menu.selectedDown()
+                    elif event.key == pygame.K_RETURN:
+                        self.main_menu.enterPressed()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.main_menu.update(mouse_pos, True)
             pygame.display.update()
@@ -216,6 +225,14 @@ class App:
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
             for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if not isinstance(self.play_menu.current_layout, ButtonsMenu): continue
+                    if event.key == pygame.K_UP:
+                        self.play_menu.selectedUp()
+                    elif event.key == pygame.K_DOWN:
+                        self.play_menu.selectedDown()
+                    elif event.key == pygame.K_RETURN:
+                        self.play_menu.enterPressed()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.play_menu.update(mouse_pos, True)
             pygame.display.update()

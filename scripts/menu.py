@@ -22,7 +22,43 @@ class Menu(VerticalLayout):
         if not self.showed: return
         super().update(mouse_pos, clicked)
 
-class StartMenu(Menu):
+class ButtonsMenu(Menu):
+    def __init__(self, pages, size, paddings=None, space=10):
+        super().__init__(pages, size, paddings=paddings, space=space)
+        self.idx_selected = None
+
+    def addWidget(self, widget):
+        super().addWidget(widget)
+        self.buttons = tuple(widget for widget in self.widgets if isinstance(widget, Button))
+
+    def update(self, mouse_pos, clicked):
+        super().update(mouse_pos, clicked)
+        if any(button.hovered for button in self.buttons):
+            self.idx_selected = None
+        if self.idx_selected is not None:
+            self.buttons[self.idx_selected].setHover()
+    
+    def enterPressed(self):
+        if self.idx_selected is not None:
+            button = self.buttons[self.idx_selected]
+            if button.callback:
+                button.callback()
+
+    def selectedUp(self):
+        if self.idx_selected is None:
+            self.idx_selected = 0
+        else:
+            self.idx_selected = (self.idx_selected - 1) % len(self.buttons)
+    
+    def selectedDown(self):
+        if self.idx_selected is None:
+            self.idx_selected = 0
+        else:
+            self.idx_selected = (self.idx_selected + 1) % len(self.buttons)
+
+
+
+class StartMenu(ButtonsMenu):
     def __init__(self, pages: Pages, size):
         super().__init__(pages, size, paddings=[50, size[0] // 4, 50, size[0] // 4], space=10)
         br = 40
@@ -115,7 +151,7 @@ class AdvancedSettingsMenu(Menu):
         self.back_button.connect(lambda: pages.setPage(1))
         self.addWidget(self.back_button)
 
-class MainMenu(Menu):
+class MainMenu(ButtonsMenu):
     # 0 - this menu
     # 1 - settings
     # 2 - advanced settings

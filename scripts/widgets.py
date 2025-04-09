@@ -88,6 +88,7 @@ class Button(Widget):
         self.border_radius = border_radius
         self.text = text
         self.clicked = False
+        self.hovered = False
 
     def render(self, surf, opacity=None):
         if not self.showed: return
@@ -104,6 +105,7 @@ class Button(Widget):
     def update(self, mouse_pos, clicked):
         global NUM_HOVERED
         self.clicked = False
+        self.hovered = False
         if not self.showed: return
         if self.rect.collidepoint(mouse_pos):
             NUM_HOVERED += 1
@@ -111,6 +113,7 @@ class Button(Widget):
             self.text_color = self.textColors[1]
             self.border_width = 0
             self.clicked = clicked
+            self.hovered = True
             if clicked and self.callback:
                 self.callback()
         else:
@@ -118,6 +121,13 @@ class Button(Widget):
             self.text_color = self.textColors[0]
             self.border_width = 2
             return False
+        
+    def setHover(self):
+        if not self.showed: return
+        self.color = self.colors[1]
+        self.text_color = self.textColors[1]
+        self.border_width = 0
+        self.hovered = True
 
     def dispose(self):
         if self.dynamic_fontsize:
@@ -546,6 +556,11 @@ class Pages:
         self.layouts = []
         self.current_layout = None
         self.actions = []
+
+    def __getattr__(self, attrname):
+        if hasattr(self.current_layout, attrname):
+            return getattr(self.current_layout, attrname)
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{attrname}'")
 
     def addLayouts(self, layouts):
         self.layouts.extend(layouts)
