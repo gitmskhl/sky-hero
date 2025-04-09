@@ -156,7 +156,12 @@ class App:
 
 
     def _new_game(self):
+        global level, current_tour
         self.__init__()
+        if level < 0:
+            current_tour -= 1
+            level += 1
+            self.tour_running = False
 
     def _certainEffectSliderMoved(self, slider, effect_name):
         if effect_name in self.sfx:
@@ -207,8 +212,8 @@ class App:
             pygame.display.update()
 
     def play_menu_run(self):
-        if level < 0:
-            self.play_menu.layouts[0].new_game_button.hide()
+        # if level < 0:
+        #     self.play_menu.layouts[0].new_game_button.hide()
         copy_screen = screen.copy()
         self.pause = True
         self.main_player.move = [0] * 4
@@ -393,15 +398,17 @@ class App:
             pygame.display.flip()
 
     def lesson_tour_run(self):
-        global level, STATE
+        global level, STATE, current_tour
         level = -1
         current_tour = 1
         tour_classes = [Tour_1, Tour_2, Tour_3, Tour_4, Tour_5]
         while current_tour - 1 < len(tour_classes):
-            tour_classes[current_tour - 1](app, screen).run()
+            self.current_lesson_tour = tour_classes[current_tour - 1](app, screen)
+            self.current_lesson_tour.run()
             if self.lesson_tour_stop: return
             current_tour += 1
             level -= 1
+        self.current_lesson_tour = None
         level = 1
         app.__init__()
         save()
