@@ -187,7 +187,7 @@ class SelectLevelMenu(Menu):
         br = 40
 
         # grid
-        self.last_level = app.level
+        self.last_level = app.achieved_level
         nlevels = len([1 for name in os.listdir("maps") if int(name[9:-5]) > 0])
         self.num_columns = num_columns = 3
         num_rows = math.ceil(nlevels / num_columns)
@@ -198,9 +198,9 @@ class SelectLevelMenu(Menu):
             for j in range(1, dims[1] + 1):
                 if q > nlevels: break
                 colors = [(0, 150, 0), (0, 255, 0)]
-                if app.level < q:
+                if app.achieved_level < q:
                     colors = [(200, 0, 0), (255, 0, 0)]
-                elif app.level == q:
+                elif app.achieved_level == q:
                     colors = [(0, 0, 150), (0, 0, 255)]
 
                 button = Button(
@@ -211,6 +211,7 @@ class SelectLevelMenu(Menu):
                     border_radius=br,
                     fontsize='auto'
                 )
+                button.connect(lambda q=q, app=app: app.load_level(q))
                 self.levels_grid_layout.addWidget(button, i, j)
                 q += 1
 
@@ -223,8 +224,8 @@ class SelectLevelMenu(Menu):
     def update(self, mouse_pos, clicked):
         if not self.showed: return
         super().update(mouse_pos, clicked)
-        if self.last_level != self.app.level:
-            self.last_level = self.app.level
+        if self.last_level != self.app.achieved_level:
+            self.last_level = self.app.achieved_level
             nlevels = len([1 for name in os.listdir("maps") if int(name[9:-5]) > 0])
             num_columns = self.num_columns
             num_rows = math.ceil(nlevels / num_columns)
@@ -234,9 +235,9 @@ class SelectLevelMenu(Menu):
                 for j in range(1, dims[1] + 1):
                     if q > nlevels: break
                     colors = [(0, 150, 0), (0, 255, 0)]
-                    if self.app.level < q:
+                    if self.app.achieved_level < q:
                         colors = [(200, 0, 0), (255, 0, 0)]
-                    elif self.app.level == q:
+                    elif self.app.achieved_level == q:
                         colors = [(0, 0, 150), (0, 0, 255)]
                     
                     self.levels_grid_layout.grid[i - 1][j - 1].colors = colors

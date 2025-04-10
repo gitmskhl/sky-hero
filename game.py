@@ -28,6 +28,7 @@ if __name__ != "__main__":
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.NOFRAME)
 pygame.display.set_caption("Sky Hero")
 clock = pygame.time.Clock()
+achieved_level = 1
 level = 1
 
 pygame.init()
@@ -39,6 +40,7 @@ class App:
         self.clock = clock
         self.running = True
         self.level = level
+        self.achieved_level = achieved_level
         self.map = Map(level)
         self.main_player = Player('entities/player/', *self.map.start_pos(), self.map, self)
         self._init_enemies()
@@ -122,6 +124,13 @@ class App:
         self.combo = Combo('COMBO')
         self.lesson_tour_stop = False
 
+    def load_level(self, lvl):
+        global level
+        if lvl > self.achieved_level: return
+        level = lvl
+        self.__init__()
+        self.go_to_game()
+
     def go_to_main_menu(self):
         global STATE
         STATE = 'menu'
@@ -186,6 +195,7 @@ class App:
         if not hasattr(self, 'main_menu_backgroun'):
             self.main_menu_background = load_image('images/menu_bg.jpeg', scale=1, size=screen.get_size())
         self.main_menu_running = True
+        self.main_menu.setPage(0)
         while self.main_menu_running:
             widgets.NUM_HOVERED = 0
             self.clock.tick(60)
@@ -415,10 +425,12 @@ class App:
         STATE = 'game'
 
 def save():
-    global level
+    global level, achieved_level
+    if level < achieved_level: return
     print('saving: level = %d' % level)
     with open('.info', 'wb') as f:
         pickle.dump(level, f)
+    achieved_level = level
 
 def load():
     global level
@@ -430,6 +442,7 @@ def load():
     print('loading: level = %d' % level)
 
 load()
+achieved_level = level
 app = App()
     
 app.run()
