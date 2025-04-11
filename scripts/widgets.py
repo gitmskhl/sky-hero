@@ -134,6 +134,31 @@ class Button(Widget):
             fontsize = int(self.rect.height / 1.2)
             self.font = pygame.font.Font('fonts/Amatic-Bold.ttf', fontsize)
 
+class FloatButton(FloatWidget):
+    def __init__(self, root, text, w, h, dx=0, dy=0, positions=None, colors=None, textColors=None, fontsize='auto', font=None, border_radius=-1, fixedSizes=(False, False)):
+        super().__init__(root, pygame.Rect(dx, dy, w, h), positions, fixedSizes)
+        self.button = Button(self, text, x=0, y=0, w=w, h=h, colors=colors, textColors=textColors, fontsize=fontsize, font=font, border_radius=border_radius)
+        self.rect = pygame.Rect(0, 0, w, h)
+
+    def update(self, mouse_pos, clicked):
+        self.button.update(mouse_pos, clicked)
+
+    def __getattr__(self, attrname):
+        self.button.showed = self.showed
+        if hasattr(self.button, attrname):
+            return getattr(self.button, attrname)
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{attrname}'")
+
+    def dispose(self):
+        if not self.showed: return
+        super().dispose()
+        self.button.rect = self.innerRect
+        self.button.callback = self.callback
+    
+class ArrowButton(FloatButton):
+    def __init__(self, root, isRightArrow, w, h, dx=0, dy=0, positions=None, colors=None, textColors=None, fontsize='auto', font=None, border_radius=-1, fixedSizes=(False, False)):
+        super().__init__(root, '>' if isRightArrow else '<', positions=positions, dx=dx, dy=dy, w=w, h=h, colors=colors, textColors=textColors, fontsize=fontsize, font=font, border_radius=border_radius, fixedSizes=fixedSizes)
+
 
 class Layout(Widget):
     def __init__(self, root, paddings, space, fixedSizes=(False, False)):
@@ -224,22 +249,6 @@ class HorizontalLayout(Layout):
         for widget in self.widgets:
             widget.dispose()
 
-    def last_dispose(self):
-        n = len([widget for widget in self.widgets if widget.showed])
-        if not self.showed or n == 0: return
-        w = (self.rect.width - self.paddings[3] - self.paddings[1] - self.space * (n - 1)) / n
-        h = self.rect.height - self.paddings[0] - self.paddings[2]
-        x = self.rect.x + self.paddings[3]
-        y = self.rect.y + self.paddings[0]
-        for widget in self.widgets:
-            if not widget.showed: continue
-            widget.rect.topleft = (x, y)
-            widget.rect.width = w
-            widget.rect.height = h
-            x += w + self.space
-        for widget in self.widgets:
-            widget.dispose()
-
 class GridLayout(Widget):
     def __init__(self, root, paddings=[0] * 4, dims=(0, 0), vspace=0, hspace=0, fixedSizes=(False, False)):
         super().__init__(root, fixedSizes)
@@ -252,6 +261,21 @@ class GridLayout(Widget):
         self.vspace = vspace
         self.hspace = hspace
     
+    def isFull(self):
+        for row in self.grid:
+            for widget in row:
+                if widget is None:
+                    return False
+        return True
+
+    def addWidgetFreeCell(self, widget):
+        for i in range(self.dims[0]):
+            for j in range(self.dims[1]):
+                if self.grid[i][j] is None:
+                    self.grid[i][j] = widget
+                    return True
+        return False
+
     def addWidget(self, widget, i, j):
         '''
         i from 1 to dims[0]
@@ -306,6 +330,81 @@ class GridLayout(Widget):
                     widget.dispose()
 
 
+class GridLayoutAjaxH(Widget):
+    def __init__(self, root, paddings=[0] * 4, dims=(0, 0), vspace=0, hspace=0, fixedSizes=(False, False)):
+        super().__init__(root, fixedSizes)
+        self.root = root
+        self.rect = pygame.Rect(0, 0, 0, 0)
+        self.paddings = list(paddings)
+
+        self.dims = list(dims)
+        self.grids = []
+        self.current_grid_idx = None
+        self.vspace = vspace
+        self.hspace = hspace
+
+        self.hlayout = HorizontalLayout(root, paddings=paddings, space=10)
+        w = 30
+        h = 60
+        colors = [(100,)*3, (150,)*3]
+        fontsize = 40
+        self.right_arrow = ArrowButton(root, True, w=w, h=h, positions=['center', 'center'], fontsize=fontsize, colors=colors, border_radius=10, fixedSizes=(True, False))
+        self.right_arrow.connect(lambda: self.setPage(self.current_grid_idx + 1))
+        self.left_arrow = ArrowButton(root, False, w=w, h=h, positions=['center', 'center'], fontsize=fontsize, colors=colors, border_radius=10, fixedSizes=(True, False))
+        self.left_arrow.connect(lambda: self.setPage(self.current_grid_idx - 1))
+        self.hlayout.addWidget(self.left_arrow)
+        self.hlayout.addWidget(self.right_arrow)
+        self.left_arrow.hide()
+        self.right_arrow.hide()
+
+    def setSize(self, width, height):
+        self.rect.width = width
+        self.rect.height = height
+
+    def addWidget(self, widget):
+        if self.current_grid_idx is None or self.grids[self.current_grid_idx].isFull():
+            self.grids.append(GridLayout(self.root, paddings=[0] * 4, dims=self.dims, vspace=self.vspace, hspace=self.hspace))
+            self.current_grid_idx = len(self.grids) - 1
+            self.hlayout.popWidget(dispose_required=False)
+            self.hlayout.addWidget(self.grids[-1])
+            self.hlayout.addWidget(self.right_arrow)
+            self.grids[-1].hide()
+        self.grids[self.current_grid_idx].addWidgetFreeCell(widget)
+
+
+    def setPage(self, page):
+        '''
+        page from 0 to len(self.grids) - 1
+        '''
+        if page < 0 or page >= len(self.grids):
+            raise 'There is no such page: %s' % page
+        if self.current_grid_idx is not None:
+            self.grids[self.current_grid_idx].hide()
+        self.current_grid_idx = page
+        self.grids[self.current_grid_idx].show()
+        self.left_arrow.show()
+        self.right_arrow.show()
+        if self.current_grid_idx == 0:
+            self.left_arrow.hide()
+        if self.current_grid_idx == len(self.grids) - 1:
+            self.right_arrow.hide()
+        self.hlayout.dispose()
+
+
+    def dispose(self):
+        if not self.showed: return
+        self.hlayout.setSize(self.rect.width, self.rect.height)
+        self.hlayout.dispose()
+
+
+    def update(self, mouse_pos, clicked):
+        if not self.showed: return
+        self.hlayout.update(mouse_pos, clicked)
+
+    def render(self, surf, opacity=None):
+        if not self.showed: return
+        self.hlayout.render(surf, opacity=opacity)
+        
 
 
 class CheckBox(FloatWidget):
