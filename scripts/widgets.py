@@ -3,6 +3,7 @@ import pygame
 pygame.init()
 
 GRAY = (100, 100, 100)
+DARK_GRAY = (150, 150, 150)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -506,6 +507,87 @@ class Slider(FloatWidget):
             ),
             self.r
         )
+class LineEdit(FloatWidget):
+    borderColors = [GRAY, WHITE]
+    defaultColors = [DARK_GRAY, GRAY]
+    defaultTextColors = [BLACK, BLACK]
+    alphabet = "qwertyuiopasdfghjklzxcvbnm1234567890"
+    pressed = {c: False for c in alphabet}
+    pressed['backspace'] = pressed['space'] = pressed['return'] = False
+    def __init__(self, root, placeholder='', max_len=None, dx=0, dy=0, w=0, h=0, positions=None, colors=None, textColors=None, borderColors=None, fontsize='auto', font=None, border_width=2, border_radius=-1, fixedSizes=(False, False)):
+        super().__init__(root, pygame.Rect(dx, dy, w, h), positions=positions, fixedSizes=fixedSizes)
+        self.root = root
+        self.max_len = max_len
+        self.rect = pygame.Rect(0, 0, w, h)
+        self.colors = colors if colors else LineEdit.defaultColors
+        self.textColors = textColors if textColors else LineEdit.defaultTextColors
+        self.borderColors = borderColors if borderColors else LineEdit.borderColors
+        self.color = self.colors[0]
+        self.text_color = self.textColors[0]
+        self.border_radius = border_radius
+        self.border_width = border_width
+        self.fontsize = fontsize
+        self.font = font if font else pygame.font.Font('fonts/Amatic-Bold.ttf', 30)
+        self.text = None
+        self.placeholder = placeholder
+        self.focused = False
+        self.cursor_timer = self.default_cursor_timer = 30
+
+    def render(self, surf, opacity=None):
+        if not self.showed: return
+        text_color = self.text_color
+        color = self.color
+        if opacity:
+            text_color = list(self.text_color) + [opacity]
+            color = list(self.color) + [opacity]
+        if self.text:
+            text = self.text
+            if self.cursor_timer <= 0:
+                if self.cursor_timer <= -self.default_cursor_timer:
+                    self.cursor_timer = self.default_cursor_timer
+                text = text + "|"
+            text = self.font.render(text, True, text_color)
+        else:
+            delta = min(50, *text_color)
+            text = self.font.render(self.placeholder, True, (text_color[0] - delta, text_color[1] - delta, text_color[2] - delta))
+        border_color = self.borderColors[self.focused]
+        pygame.draw.rect(surf, border_color, (self.rect.left - self.border_width, self.rect.top-self.border_width, self.rect.width + 2 * self.border_width, self.rect.height + 2 * self.border_width), border_radius=self.border_radius)
+        pygame.draw.rect(surf, color, self.rect, border_radius=self.border_radius)
+        surf.blit(text, (self.innerRect.left + 5, self.innerRect.centery - text.get_height()//2))
+
+    def update(self, mouse_pos, clicked):
+        if clicked and self.rect.collidepoint(mouse_pos):
+            self.focused = True
+        elif clicked:
+            self.focused = False
+            self.cursor_timer = self.default_cursor_timer
+        if self.focused:
+            self.cursor_timer -= 1
+            for key, pressed in LineEdit.pressed.items():
+                if pressed:
+                    if key == 'backspace':
+                        if self.text is not None:
+                            self.text = self.text[:-1]
+                            if self.text == '':
+                                self.text = None
+                    elif key == 'space':
+                        if self.text is None:
+                            self.text = ''
+                        self.text += ' '
+                    elif key == 'return':
+                        if self.callback:
+                            self.callback()
+                    elif key in LineEdit.alphabet:
+                        if self.text is None:
+                            self.text = ''
+                        if self.max_len is None or len(self.text) < self.max_len:
+                            self.text += key
+        if self.fontsize == 'auto':
+            fontsize = int(self.rect.height / 1.2)
+            self.font = pygame.font.Font('fonts/Amatic-Bold.ttf', fontsize)
+        self.color = self.colors[self.focused]
+        self.text_color = self.textColors[self.focused]
+
 
 class Label(FloatWidget):
     def __init__(self, root, text, dx=0, dy=0, positions=None, fontsize=50, font=None, color=BLACK, size=None, fixedSizes=(False, False)):
