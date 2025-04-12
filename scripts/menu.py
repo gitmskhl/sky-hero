@@ -182,7 +182,7 @@ class MainMenu(ButtonsMenu):
 
 class SelectLevelMenu(Menu):
     def __init__(self, app, pages: Pages, size):
-        super().__init__(pages, size, paddings=[50, 20, 50, 20], space=200)
+        super().__init__(pages, size, paddings=[50, 20, 0, 20], space=200)
         self.app = app
         br = 40
 
@@ -215,11 +215,16 @@ class SelectLevelMenu(Menu):
                 self.levels_grid_layout.addWidget(button, i, j)
                 q += 1
 
-        self.back_button = Button(self.root, h=80, text='Back', border_radius=br, fixedSizes=(False, True))
+        self.bottom_layout = HorizontalLayout(self.root, paddings=[0] * 4, space=10, fixedSizes=(False, True), h=100)
+        self.my_levels_button = Button(self.root,  h=80, text='My levels >', border_radius=br, fixedSizes=(False, True))
+        self.back_button = Button(self.root, h=80, text='< Back', border_radius=br, fixedSizes=(False, True))
         self.back_button.connect(lambda: pages.setPage(0))
+        self.bottom_layout.addWidget(self.back_button)
+        self.bottom_layout.addWidget(self.my_levels_button)
         
         self.addWidget(self.levels_grid_layout)
-        self.addWidget(self.back_button)
+        self.addWidget(self.bottom_layout)
+        # self.addWidget(self.back_button)
     
     def update(self, mouse_pos, clicked):
         if not self.showed: return

@@ -162,13 +162,13 @@ class ArrowButton(FloatButton):
 
 
 class Layout(Widget):
-    def __init__(self, root, paddings, space, fixedSizes=(False, False)):
+    def __init__(self, root, paddings, space, fixedSizes=(False, False), w=0, h=0):
         '''
             paddings = [Up, Right, Down, Left]
         '''
         super().__init__(root, fixedSizes)
         self.root = root
-        self.rect = pygame.Rect(0, 0, 0, 0)
+        self.rect = pygame.Rect(0, 0, w, h)
         self.widgets = []
         self.paddings = list(paddings)
         self.space = space
@@ -197,8 +197,8 @@ class Layout(Widget):
 
 
 class VerticalLayout(Layout):
-    def __init__(self, root, paddings=[0] * 4, space=0, fixedSizes=(False, False)):
-        super().__init__(root, paddings, space, fixedSizes)
+    def __init__(self, root, paddings=[0] * 4, space=0, fixedSizes=(False, False), w=0, h=0):
+        super().__init__(root, paddings, space, fixedSizes, w, h)
 
     def dispose(self):
         if not self.showed: return
@@ -225,8 +225,8 @@ class VerticalLayout(Layout):
 
 
 class HorizontalLayout(Layout):
-    def __init__(self, root, paddings=[0] * 4, space=0, fixedSizes=(False, False)):
-        super().__init__(root, paddings, space, fixedSizes)
+    def __init__(self, root, paddings=[0] * 4, space=0, fixedSizes=(False, False), w=0, h=0):
+        super().__init__(root, paddings, space, fixedSizes, w, h)
 
     def dispose(self):
         if not self.showed: return
