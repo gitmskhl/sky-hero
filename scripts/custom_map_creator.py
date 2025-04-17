@@ -394,13 +394,18 @@ class Editor:
                 tiles.append(tile)
         return tiles
 
-# This algo can be more efficient
     def _get_tiles_in_area(self, rect):
         tiles = []
-        for pos, tile in self.tile_map.items():
-            tilerect = pygame.Rect(pos[0] * self.tile_size, pos[1] * self.tile_size, self.tile_size, self.tile_size)
-            if tilerect.colliderect(rect):
-                tiles.append((pos, tile))
+        i_start = rect.left // self.tile_size - 1
+        i_end = rect.right // self.tile_size + 1
+        j_start = rect.top // self.tile_size - 1
+        j_end = rect.bottom // self.tile_size + 1
+        for i in range(i_start, i_end + 1):
+            for j in range(j_start, j_end + 1):
+                if (i, j) in self.tile_map:
+                    tilerect = pygame.Rect(i * self.tile_size, j * self.tile_size, self.tile_size, self.tile_size)
+                    if tilerect.colliderect(rect):
+                        tiles.append(((i, j), self.tile_map[(i, j)]))
         return tiles
     
 
@@ -483,19 +488,27 @@ class Editor:
         except:
             pass
 
+
+
 def zoom_plus():
     global editor
     editor.tile_size += editor.change_tiles_size
+    last_k = editor.k
     editor.camera[0] /= editor.k
     editor.camera[1] /= editor.k
     editor.k = editor.tile_size / editor.base_tile_size
     editor.camera[0] *= editor.k
     editor.camera[1] *= editor.k
     editor._resize_resources()
+    if editor.selected_area:
+        for i in range(2):
+            editor.selected_area[i][0] *= editor.k / last_k
+            editor.selected_area[i][1] *= editor.k / last_k
 
 def zoom_minus():
     global editor
     if editor.tile_size > editor.change_tiles_size:
+        last_k = editor.k
         editor.tile_size -= editor.change_tiles_size
         editor.camera[0] /= editor.k
         editor.camera[1] /= editor.k
@@ -503,6 +516,10 @@ def zoom_minus():
         editor.camera[0] *= editor.k
         editor.camera[1] *= editor.k
         editor._resize_resources()
+        if editor.selected_area:
+            for i in range(2):
+                editor.selected_area[i][0] *= editor.k / last_k
+                editor.selected_area[i][1] *= editor.k / last_k
 
 def run(screen_, filename=None):
     global screen, ctrl_pressed, shift_pressed, alt_pressed, z_pressed, fill_activated, editor
@@ -517,6 +534,7 @@ def run(screen_, filename=None):
     z_pressed = False
     fill_activated = False
     mouse_wheel_pressed = False
+    current_cursor_type = 'arrow'
 
     def undo():
         while True:
@@ -645,6 +663,12 @@ def run(screen_, filename=None):
             editor.camera[0] -= mpos[0] - last_mpos[0]
             editor.camera[1] -= mpos[1] - last_mpos[1]
             last_mpos = mpos
+            if current_cursor_type != 'sizeall':
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_SIZEALL)
+                current_cursor_type = 'sizeall'
+        elif current_cursor_type != 'arrow':
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+            current_cursor_type = 'arrow'
 
         if z_pressed and ctrl_pressed and alt_pressed:
             if shift_pressed:
