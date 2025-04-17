@@ -516,6 +516,7 @@ def run(screen_, filename=None):
     alt_pressed = False
     z_pressed = False
     fill_activated = False
+    mouse_wheel_pressed = False
 
     def undo():
         while True:
@@ -638,6 +639,13 @@ def run(screen_, filename=None):
         editor.update()
         editor.render(screen)
 
+        mpos = pygame.mouse.get_pos()
+
+        if mouse_wheel_pressed:
+            editor.camera[0] -= mpos[0] - last_mpos[0]
+            editor.camera[1] -= mpos[1] - last_mpos[1]
+            last_mpos = mpos
+
         if z_pressed and ctrl_pressed and alt_pressed:
             if shift_pressed:
                 redo()
@@ -746,6 +754,9 @@ def run(screen_, filename=None):
                 elif event.button == 3:
                     editor.clicked[2] = True
                     editor.pressed[2] = True
+                else:
+                    mouse_wheel_pressed = True
+                    last_mpos = mpos
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
                     editor.pressed[0] = False
@@ -754,6 +765,8 @@ def run(screen_, filename=None):
                     editor.moving_selected_area = False
                 elif event.button == 3:
                     editor.pressed[2] = False
+                else:
+                    mouse_wheel_pressed = False
 
         pygame.display.flip()
 
