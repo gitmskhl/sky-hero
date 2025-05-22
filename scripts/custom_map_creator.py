@@ -5,6 +5,7 @@ import shelve
 from collections import deque
 import copy
 import utils
+from custom_map_widget import ResourcePanel, State
 
 pygame.init()
 
@@ -40,7 +41,7 @@ class Editor:
     def __init__(self, filename):
         self.base_tile_size = 16 # the original size of the tiles (on the images)
         self.tile_size = 32 # the current size of the tiles
-        self.change_tiles_size = 16 # how much size of the tiles will be changed if zoom
+        self.change_tiles_size = 2 # how much size of the tiles will be changed if zoom
         self.k = self.tile_size / self.base_tile_size
         self.tile_map = {}
         self.nogrid_tiles = []
@@ -521,12 +522,17 @@ def zoom_minus():
                 editor.selected_area[i][0] *= editor.k / last_k
                 editor.selected_area[i][1] *= editor.k / last_k
 
+
 def run(screen_, filename=None):
     global screen, ctrl_pressed, shift_pressed, alt_pressed, z_pressed, fill_activated, editor
     screen = screen_
     clock = pygame.time.Clock()
 
     editor = Editor(filename)
+    state = State()
+    resource_panel = ResourcePanel(editor.resources, (2, 5))
+    resource_panel.show()
+    resource_panel.dispose()
 
     ctrl_pressed = False
     shift_pressed = False
@@ -650,12 +656,25 @@ def run(screen_, filename=None):
                     editor.tile_map[pos] = tile
                 editor.nogrid_tiles.extend(offgrid_tiles)
             break
-
+    
+    events = []
     while True:
         clock.tick(60)
         screen.fill((0, 0, 0))
+        
+        # editor
         editor.update()
         editor.render(screen)
+
+        # state
+        state.update(events)
+
+        # resource panel
+        resource_panel.update(state)
+        resource_panel.render(screen)
+        if resource_panel.selected_tile:
+            editor.current_resource = resource_panel.selected_tile['tile']['type']
+            editor.current_variant = resource_panel.selected_tile['tile']['variant']
 
         mpos = pygame.mouse.get_pos()
 
@@ -682,7 +701,8 @@ def run(screen_, filename=None):
             my+= editor.camera[1]
             editor.selected_area[-1] = [mx, my]
 
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LSHIFT:
                     editor.shift = True

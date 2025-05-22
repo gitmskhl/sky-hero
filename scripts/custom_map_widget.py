@@ -146,8 +146,9 @@ class Widget:
         self.hovered = self.rect.collidepoint(state.mouse_pos)
         State.NUM_HOVERED += self.hovered * self.clickable
         self.just_clicked = False
-        if self.clickable and self.hovered and state.mouse_clicked:
-            self.onClick()
+        if self.hovered and state.mouse_clicked:
+            if self.clickable:
+                self.onClick()
             self.just_clicked = True
 
     def render(self, surf):
@@ -198,6 +199,8 @@ class Widget:
         )
         if self.bgImage and isinstance(self.bgImage, str):
             self.bgImage = load_image(self.bgImage, scale=1, size=self.innerRect.size)
+
+
 
 class StackedWidget(Widget):
     def __init__(self, parent):
@@ -282,8 +285,6 @@ class StackedWidget(Widget):
         if changePageIdx:
             self.current_idx = 0
         self.widgets[self.current_idx].show()
-
-
 
 class Button(Widget):
     def __init__(self, parent):
@@ -640,7 +641,8 @@ class ResourcePanel(StackedWidget):
         self.resources = resources
         tile_size = next(iter(resources.values()))[0].get_width()
         space = 10
-        self.panel_width, self.panel_height = (tile_size + space * 3) * dims[1], (tile_size + 12) * dims[0]
+        self.panel_width, self.panel_height = (tile_size + space * 3) * dims[1], (tile_size + 5) * dims[0]
+        print(self.panel_width, self.panel_height)
         placements = ['center', 'center']
         grid = None
         for resource_name, images in self.resources.items():
@@ -671,6 +673,7 @@ class ResourcePanel(StackedWidget):
                 tile_img.setBackgroundColors([RESOURCE_PANEL_BACKGROUND_COLOR, DARK_GRAY])
                 tile_img.setBgImage(image)
                 tile_img.setBorderColors([RESOURCE_PANEL_BACKGROUND_COLOR, BLACK])
+                tile_img.setBorderRadius(2)
                 tile_img.tile = {
                     'type': resource_name,
                     'variant': variant
@@ -684,7 +687,7 @@ class ResourcePanel(StackedWidget):
         grid.setAllRows('setBorderWidth', 0)
         grid = GridLayoutV(self)
         grid.setDims(1, dims[1])
-        for image in self.resources['large_decor']:
+        for variant, image in enumerate(self.resources['large_decor']):
             tile_img = Button(grid)
             iw, ih = image.get_size()
             max_height = self.panel_height - 5
@@ -697,7 +700,7 @@ class ResourcePanel(StackedWidget):
             tile_img.setBgImage(image)
             tile_img.setBorderColors([RESOURCE_PANEL_BACKGROUND_COLOR, BLACK])
             tile_img.tile = {
-                    'type': resource_name,
+                    'type': 'large_decor',
                     'variant': variant
                 }
             grid.appendWidgetFree(tile_img)
