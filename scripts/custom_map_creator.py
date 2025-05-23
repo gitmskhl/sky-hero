@@ -13,6 +13,8 @@ MAP_FILE='.levels'
 
 HISTORY_MAX=10000
 GRAY = (50,) * 3
+LIGHT_GRAY = (200,) * 3
+
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -522,6 +524,13 @@ def zoom_minus():
                 editor.selected_area[i][0] *= editor.k / last_k
                 editor.selected_area[i][1] *= editor.k / last_k
 
+def activate_fill(btn):
+    global fill_activated
+    fill_activated = not fill_activated
+    if fill_activated:
+        btn.setBackgroundColors([LIGHT_GRAY, LIGHT_GRAY])
+    else:
+        btn.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
 
 def run(screen_, filename=None):
     global screen, ctrl_pressed, shift_pressed, alt_pressed, z_pressed, fill_activated, editor
@@ -557,9 +566,27 @@ def run(screen_, filename=None):
     zoom_minus_button.setBgImage('images/icons/minus.png')
     zoom_minus_button.onClick = zoom_minus    
 
+    save_button = Button('')
+    save_button.setSize(30, 30)
+    save_button.setFixedSizes([True, True])
+    save_button.setBorderWidth(0)
+    save_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
+    save_button.setBgImage('images/icons/diskette.png')
+    save_button.onClick = editor.save
+
+    fill_button = Button('')
+    fill_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
+    fill_button.setBorderWidth(0)
+    fill_button.setSize(30, 30)
+    fill_button.setFixedSizes([True, True])
+    fill_button.setBgImage('images/icons/fill.png')
+    fill_button.onClick = lambda: activate_fill(fill_button)
+
     panel.addWidget(zoom_plus_button)
     panel.addWidget(zoom_minus_button)
     panel.addWidget(resource_panel)
+    panel.addWidget(save_button)
+    panel.addWidget(fill_button)
 
     panel.show()
     panel.dispose()
