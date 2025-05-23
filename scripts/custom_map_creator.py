@@ -658,6 +658,7 @@ def run(screen_, filename=None):
             break
     
     events = []
+    tool_bar_rect = pygame.Rect(0, 0, SCREEN_WIDTH, resource_panel.panel_height)
     while True:
         clock.tick(60)
         screen.fill((0, 0, 0))
@@ -779,7 +780,7 @@ def run(screen_, filename=None):
                     z_pressed = False
                 elif event.key == pygame.K_LALT:
                     alt_pressed = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN and not tool_bar_rect.collidepoint(mpos):
                 if event.button == 1:
                     editor.clicked[0] = True
                     editor.pressed[0] = True
@@ -801,7 +802,7 @@ def run(screen_, filename=None):
                 else:
                     mouse_wheel_pressed = True
                     last_mpos = mpos
-            elif event.type == pygame.MOUSEBUTTONUP:
+            elif event.type == pygame.MOUSEBUTTONUP and not tool_bar_rect.collidepoint(mpos):
                 if event.button == 1:
                     editor.pressed[0] = False
                     if editor.moving_selected_area:
