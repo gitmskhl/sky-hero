@@ -532,8 +532,140 @@ def activate_fill(btn):
     else:
         btn.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
 
+
+def undo():
+    while True:
+        if editor.history_index == 0: return
+        editor.history_index -= 1
+        action = editor.history[editor.history_index]
+        if action['action'] == 'add':
+            if action['type'] == 'grid':
+                if action['pos'] in editor.tile_map:
+                    del editor.tile_map[action['pos']]
+                else: continue
+            else:
+                editor.nogrid_tiles.remove(action['tile'])
+        elif action['action'] == 'del':
+            if action['type'] == 'grid':
+                editor.tile_map[action['pos']] = action['tile']
+            else:
+                editor.nogrid_tiles.append(action['tile'])
+        elif action['action'] == 'add_filled':
+            for i, j in action['pos']:
+                if (i, j) in editor.tile_map:
+                    del editor.tile_map[(i, j)]
+        elif action['action'] == 'move_selected_area':
+            shiftx, shifty = action['pos']
+            grid_tiles = action['tile']['grid']
+            offgrid_tiles = action['tile']['offgrid'] if 'offgrid' in action['tile'] else []
+            for pos, tile in grid_tiles:
+                newx = pos[0] * editor.tile_size + shiftx
+                newy = pos[1] * editor.tile_size + shifty
+                x = newx // editor.tile_size
+                y = newy // editor.tile_size
+                if (x, y) in editor.tile_map:
+                    del editor.tile_map[(x, y)]
+            for pos, tile in grid_tiles:
+                editor.tile_map[pos] = tile
+            
+            for tile in offgrid_tiles:
+                tile['pos'] = (
+                    (tile['pos'][0] * editor.k - shiftx) / editor.k,
+                    (tile['pos'][1] * editor.k - shifty) / editor.k
+                )
+
+        elif action['action'] == 'remove_selected_area':
+            tiles_in_area = action['tile']['grid']
+            offgrid_tiles_in_area = action['tile']['offgrid']
+            for pos, tile in tiles_in_area:
+                editor.tile_map[pos] = tile
+            editor.nogrid_tiles.extend(offgrid_tiles_in_area)
+        elif action['action'] == 'copy_sector':
+            grid_tiles = action['tile']['grid'] if 'grid' in action['tile'] else []
+            offgrid_tiles = action['tile']['offgrid'] if 'offgrid' in action['tile'] else []
+            for pos, tile in grid_tiles:
+                if pos in editor.tile_map:
+                    del editor.tile_map[pos]
+            for tile in offgrid_tiles:
+                if tile in editor.nogrid_tiles:
+                    editor.nogrid_tiles.remove(tile)
+        break
+
+def redo():
+    while True:
+        if editor.history_index == len(editor.history): return
+        action = editor.history[editor.history_index]
+        editor.history_index += 1
+        if action['action'] == 'add':
+            if action['type'] == 'grid':
+                editor.tile_map[action['pos']] = action['tile']
+            else:
+                editor.nogrid_tiles.append(action['tile'])
+        elif action['action'] == 'del':
+            if action['type'] == 'grid':
+                if action['pos'] in editor.tile_map:
+                    del editor.tile_map[action['pos']]
+                else: continue
+            else:
+                editor.nogrid_tiles.remove(action['tile'])
+        elif action['action'] == 'add_filled':
+            for i, j in action['pos']:
+                editor.tile_map[(i, j)] = action['tile']
+        elif action['action'] == 'move_selected_area':
+            grid_tiles = action['tile']['grid']
+            offgrid_tiles = action['tile']['offgrid'] if 'offgrid' in action['tile'] else []
+            shiftx, shifty = action['pos']
+            for pos, tile in grid_tiles:
+                if pos in editor.tile_map:
+                    del editor.tile_map[pos]
+            for pos, tile in grid_tiles:
+                newx = pos[0] * editor.tile_size + shiftx
+                newy = pos[1] * editor.tile_size + shifty
+                x = newx // editor.tile_size
+                y = newy // editor.tile_size
+                editor.tile_map[(x, y)] = tile
+
+            for tile in offgrid_tiles:
+                tile['pos'] = (
+                    (tile['pos'][0]*editor.k + shiftx) / editor.k,
+                    (tile['pos'][1]*editor.k + shifty) / editor.k
+                )
+
+        elif action['action'] == 'remove_selected_area':
+            tiles_in_area = action['tile']['grid']
+            offgrid_tiles_in_area = action['tile']['offgrid']
+            for pos, tile in tiles_in_area:
+                if pos in editor.tile_map:
+                    del editor.tile_map[pos]
+            for tile in offgrid_tiles_in_area:
+                if tile in editor.nogrid_tiles:
+                    editor.nogrid_tiles.remove(tile)
+        elif action['action'] == 'copy_sector':
+            grid_tiles = action['tile']['grid'] if 'grid' in action['tile'] else []
+            offgrid_tiles = action['tile']['offgrid'] if 'offgrid' in action['tile'] else []
+            for pos, tile in grid_tiles:
+                editor.tile_map[pos] = tile
+            editor.nogrid_tiles.extend(offgrid_tiles)
+        break
+
+def activate_hook(hook_button):
+    editor.shift = not editor.shift
+    if editor.shift:
+        hook_button.setBackgroundColors([LIGHT_GRAY, LIGHT_GRAY])
+    else:
+        hook_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
+
+def make_transform(transform_button):
+    global transforming
+    transforming = not transforming
+    if transforming:
+        transform_button.setBackgroundColors([LIGHT_GRAY, LIGHT_GRAY])
+    else:
+        transform_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
+
 def run(screen_, filename=None):
     global screen, ctrl_pressed, shift_pressed, alt_pressed, z_pressed, fill_activated, editor
+    global transforming
     screen = screen_
     clock = pygame.time.Clock()
 
@@ -582,18 +714,63 @@ def run(screen_, filename=None):
     fill_button.setBgImage('images/icons/fill.png')
     fill_button.onClick = lambda: activate_fill(fill_button)
 
+    copy_button = Button('')
+    copy_button.setSize(30, 30)
+    copy_button.setFixedSizes([True, True])
+    copy_button.setBorderWidth(0)
+    copy_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
+    copy_button.setBgImage('images/icons/copy.png')
+    
+    undo_button = Button('')
+    undo_button.setSize(30, 30)
+    undo_button.setFixedSizes([True, True])
+    undo_button.setBorderWidth(0)
+    undo_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
+    undo_button.setBgImage('images/icons/undo.png')
+    undo_button.onClick = undo
+
+    redo_button = Button('')
+    redo_button.setSize(30, 30)
+    redo_button.setFixedSizes([True, True])
+    redo_button.setBorderWidth(0)
+    redo_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
+    redo_button.setBgImage('images/icons/redo.png')
+    redo_button.onClick = redo
+
+    hook_button = Button('')
+    hook_button.setSize(30, 30)
+    hook_button.setFixedSizes([True, True])
+    hook_button.setBorderWidth(0)
+    hook_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
+    hook_button.setBgImage('images/icons/hook.png')
+    hook_button.onClick = lambda: activate_hook(hook_button)
+    activate_hook(hook_button)
+
+    transform_button = Button('')
+    transform_button.setSize(30, 30)
+    transform_button.setFixedSizes([True, True])
+    transform_button.setBorderWidth(0)
+    transform_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
+    transform_button.setBgImage('images/icons/transform.png')
+    transform_button.onClick = lambda: make_transform(transform_button)
+
     panel.addWidget(zoom_plus_button)
     panel.addWidget(zoom_minus_button)
     panel.addWidget(resource_panel)
     panel.addWidget(save_button)
     panel.addWidget(fill_button)
+    panel.addWidget(copy_button)
+    panel.addWidget(undo_button)
+    panel.addWidget(redo_button)
+    panel.addWidget(hook_button)
+    panel.addWidget(transform_button)
 
     panel.show()
     panel.dispose()
     # resource_panel.show()
     # resource_panel.dispose()
 
-
+    transforming = False
     ctrl_pressed = False
     shift_pressed = False
     alt_pressed = False
@@ -602,120 +779,6 @@ def run(screen_, filename=None):
     mouse_wheel_pressed = False
     current_cursor_type = 'arrow'
 
-    def undo():
-        while True:
-            if editor.history_index == 0: return
-            editor.history_index -= 1
-            action = editor.history[editor.history_index]
-            if action['action'] == 'add':
-                if action['type'] == 'grid':
-                    if action['pos'] in editor.tile_map:
-                        del editor.tile_map[action['pos']]
-                    else: continue
-                else:
-                    editor.nogrid_tiles.remove(action['tile'])
-            elif action['action'] == 'del':
-                if action['type'] == 'grid':
-                    editor.tile_map[action['pos']] = action['tile']
-                else:
-                    editor.nogrid_tiles.append(action['tile'])
-            elif action['action'] == 'add_filled':
-                for i, j in action['pos']:
-                    if (i, j) in editor.tile_map:
-                        del editor.tile_map[(i, j)]
-            elif action['action'] == 'move_selected_area':
-                shiftx, shifty = action['pos']
-                grid_tiles = action['tile']['grid']
-                offgrid_tiles = action['tile']['offgrid'] if 'offgrid' in action['tile'] else []
-                for pos, tile in grid_tiles:
-                    newx = pos[0] * editor.tile_size + shiftx
-                    newy = pos[1] * editor.tile_size + shifty
-                    x = newx // editor.tile_size
-                    y = newy // editor.tile_size
-                    if (x, y) in editor.tile_map:
-                        del editor.tile_map[(x, y)]
-                for pos, tile in grid_tiles:
-                    editor.tile_map[pos] = tile
-                
-                for tile in offgrid_tiles:
-                    tile['pos'] = (
-                        (tile['pos'][0] * editor.k - shiftx) / editor.k,
-                        (tile['pos'][1] * editor.k - shifty) / editor.k
-                    )
-
-            elif action['action'] == 'remove_selected_area':
-                tiles_in_area = action['tile']['grid']
-                offgrid_tiles_in_area = action['tile']['offgrid']
-                for pos, tile in tiles_in_area:
-                    editor.tile_map[pos] = tile
-                editor.nogrid_tiles.extend(offgrid_tiles_in_area)
-            elif action['action'] == 'copy_sector':
-                grid_tiles = action['tile']['grid'] if 'grid' in action['tile'] else []
-                offgrid_tiles = action['tile']['offgrid'] if 'offgrid' in action['tile'] else []
-                for pos, tile in grid_tiles:
-                    if pos in editor.tile_map:
-                        del editor.tile_map[pos]
-                for tile in offgrid_tiles:
-                    if tile in editor.nogrid_tiles:
-                        editor.nogrid_tiles.remove(tile)
-            break
-
-    def redo():
-        while True:
-            if editor.history_index == len(editor.history): return
-            action = editor.history[editor.history_index]
-            editor.history_index += 1
-            if action['action'] == 'add':
-                if action['type'] == 'grid':
-                    editor.tile_map[action['pos']] = action['tile']
-                else:
-                    editor.nogrid_tiles.append(action['tile'])
-            elif action['action'] == 'del':
-                if action['type'] == 'grid':
-                    if action['pos'] in editor.tile_map:
-                        del editor.tile_map[action['pos']]
-                    else: continue
-                else:
-                    editor.nogrid_tiles.remove(action['tile'])
-            elif action['action'] == 'add_filled':
-                for i, j in action['pos']:
-                    editor.tile_map[(i, j)] = action['tile']
-            elif action['action'] == 'move_selected_area':
-                grid_tiles = action['tile']['grid']
-                offgrid_tiles = action['tile']['offgrid'] if 'offgrid' in action['tile'] else []
-                shiftx, shifty = action['pos']
-                for pos, tile in grid_tiles:
-                    if pos in editor.tile_map:
-                        del editor.tile_map[pos]
-                for pos, tile in grid_tiles:
-                    newx = pos[0] * editor.tile_size + shiftx
-                    newy = pos[1] * editor.tile_size + shifty
-                    x = newx // editor.tile_size
-                    y = newy // editor.tile_size
-                    editor.tile_map[(x, y)] = tile
-
-                for tile in offgrid_tiles:
-                    tile['pos'] = (
-                        (tile['pos'][0]*editor.k + shiftx) / editor.k,
-                        (tile['pos'][1]*editor.k + shifty) / editor.k
-                    )
-
-            elif action['action'] == 'remove_selected_area':
-                tiles_in_area = action['tile']['grid']
-                offgrid_tiles_in_area = action['tile']['offgrid']
-                for pos, tile in tiles_in_area:
-                    if pos in editor.tile_map:
-                        del editor.tile_map[pos]
-                for tile in offgrid_tiles_in_area:
-                    if tile in editor.nogrid_tiles:
-                        editor.nogrid_tiles.remove(tile)
-            elif action['action'] == 'copy_sector':
-                grid_tiles = action['tile']['grid'] if 'grid' in action['tile'] else []
-                offgrid_tiles = action['tile']['offgrid'] if 'offgrid' in action['tile'] else []
-                for pos, tile in grid_tiles:
-                    editor.tile_map[pos] = tile
-                editor.nogrid_tiles.extend(offgrid_tiles)
-            break
     
     events = []
     tool_bar_rect = pygame.Rect(0, 0, SCREEN_WIDTH, resource_panel.panel_height)
@@ -726,6 +789,8 @@ def run(screen_, filename=None):
         # editor
         editor.update()
         editor.render(screen)
+        if transforming:
+            editor.transform()
 
         # state
         state.update(events)
@@ -766,7 +831,6 @@ def run(screen_, filename=None):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LSHIFT:
-                    editor.shift = True
                     shift_pressed = True
                 elif event.key == pygame.K_ESCAPE:
                     return
@@ -824,7 +888,6 @@ def run(screen_, filename=None):
                     zoom_minus()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LSHIFT:
-                    editor.shift = False
                     shift_pressed = False
                 elif event.key == pygame.K_RIGHT:
                     editor.move[0] = 0
