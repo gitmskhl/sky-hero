@@ -5,7 +5,7 @@ import shelve
 from collections import deque
 import copy
 import utils
-from custom_map_widget import ResourcePanel, State
+from custom_map_widget import ResourcePanel, State, HorizontalLayout, Button
 
 pygame.init()
 
@@ -530,9 +530,42 @@ def run(screen_, filename=None):
 
     editor = Editor(filename)
     state = State()
+
+    # -- setup the panel --
+    panel = HorizontalLayout(None)
+    panel.setPosition(0, 0)
     resource_panel = ResourcePanel(editor.resources, (2, 5))
-    resource_panel.show()
-    resource_panel.dispose()
+    panel.setHeight(resource_panel.panel_height)
+    panel.setWidth(SCREEN_WIDTH)
+    panel.setFixedSizes([False, True])
+    panel.setBackgroundColors([[236, ] * 3, [236,] * 3])
+    panel.setBorderWidth(0)
+    panel.setSpace(10)
+
+    zoom_plus_button = Button('')
+    zoom_plus_button.setSize(30, 30)
+    zoom_plus_button.setFixedSizes([True, True])
+    zoom_plus_button.setBorderRadius(30)
+    zoom_plus_button.setBgImage('images/icons/plus.png')
+    zoom_plus_button.setMargins([0, 10])
+    zoom_plus_button.onClick = zoom_plus
+
+    zoom_minus_button = Button('')
+    zoom_minus_button.setSize(30, 30)
+    zoom_minus_button.setFixedSizes([True, True])
+    zoom_minus_button.setBorderRadius(30)
+    zoom_minus_button.setBgImage('images/icons/minus.png')
+    zoom_minus_button.onClick = zoom_minus    
+
+    panel.addWidget(zoom_plus_button)
+    panel.addWidget(zoom_minus_button)
+    panel.addWidget(resource_panel)
+
+    panel.show()
+    panel.dispose()
+    # resource_panel.show()
+    # resource_panel.dispose()
+
 
     ctrl_pressed = False
     shift_pressed = False
@@ -671,8 +704,8 @@ def run(screen_, filename=None):
         state.update(events)
 
         # resource panel
-        resource_panel.update(state)
-        resource_panel.render(screen)
+        panel.update(state)
+        panel.render(screen)
         if resource_panel.selected_tile:
             editor.current_resource = resource_panel.selected_tile['tile']['type']
             editor.current_variant = resource_panel.selected_tile['tile']['variant']
@@ -812,11 +845,13 @@ def run(screen_, filename=None):
                     editor.pressed[2] = False
                 else:
                     mouse_wheel_pressed = False
+            elif event.type == pygame.QUIT:
+                exit()
 
         pygame.display.flip()
 
 
 if __name__ == "__main__":
-    screen = pygame.display.set_mode((800, 600), pygame.NOFRAME)
+    screen = pygame.display.set_mode((800, 600))
     run(screen, 'untitled(1)')
     print('Ended')
