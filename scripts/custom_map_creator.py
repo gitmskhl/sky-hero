@@ -663,6 +663,13 @@ def make_transform(transform_button):
     else:
         transform_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
 
+def show_grid(grid_button):
+    editor.grid = not editor.grid
+    if editor.grid:
+        grid_button.setBackgroundColors([LIGHT_GRAY, LIGHT_GRAY])
+    else:
+        grid_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
+
 def run(screen_, filename=None):
     global screen, ctrl_pressed, shift_pressed, alt_pressed, z_pressed, fill_activated, editor
     global transforming
@@ -754,6 +761,14 @@ def run(screen_, filename=None):
     transform_button.setBgImage('images/icons/transform.png')
     transform_button.onClick = lambda: make_transform(transform_button)
 
+    grid_button = Button('')
+    grid_button.setSize(30, 30)
+    grid_button.setFixedSizes([True, True])
+    grid_button.setBorderWidth(0)
+    grid_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
+    grid_button.setBgImage('images/icons/grid.png')
+    grid_button.onClick = lambda: show_grid(grid_button)
+
     panel.addWidget(zoom_plus_button)
     panel.addWidget(zoom_minus_button)
     panel.addWidget(resource_panel)
@@ -764,6 +779,7 @@ def run(screen_, filename=None):
     panel.addWidget(redo_button)
     panel.addWidget(hook_button)
     panel.addWidget(transform_button)
+    panel.addWidget(grid_button)
 
     panel.show()
     panel.dispose()
@@ -779,7 +795,9 @@ def run(screen_, filename=None):
     mouse_wheel_pressed = False
     current_cursor_type = 'arrow'
 
-    
+    editor.grid = False
+    show_grid(grid_button)
+
     events = []
     tool_bar_rect = pygame.Rect(0, 0, SCREEN_WIDTH, resource_panel.panel_height)
     while True:
