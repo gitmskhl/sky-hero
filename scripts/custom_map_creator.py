@@ -740,6 +740,7 @@ def run(screen_, filename=None):
     copy_button.setBorderWidth(0)
     copy_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
     copy_button.setBgImage('images/icons/copy.png')
+    copy_button.onClick = editor._copy_sector
     
     undo_button = Button('')
     undo_button.setSize(30, 30)
