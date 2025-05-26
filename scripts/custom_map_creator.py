@@ -165,7 +165,8 @@ class Editor:
         return result
 
     def _render_moving_tiles(self):
-        if not self.moving_tiles: return
+        if not self.moving_tiles and not self.moving_offgrid_tiles: 
+            return
         mx, my = pygame.mouse.get_pos()
         mx += self.camera[0]
         my += self.camera[1]
@@ -231,7 +232,7 @@ class Editor:
         selected_img = self.resources[self.current_resource][self.current_variant]
         selected_img.set_alpha(100)
         mpos = pygame.mouse.get_pos()
-        if not self.grid or not fill_activated:
+        if (not self.grid or not fill_activated) and not selection_activated:
             if self.grid:
                 pos = ((mpos[0] + self.camera[0])//self.tile_size*self.tile_size - self.camera[0], (mpos[1] + self.camera[1])//self.tile_size*self.tile_size - self.camera[1])
             else: 
@@ -435,6 +436,7 @@ class Editor:
             sarect = self._get_selected_area_rect()
             mpos = pygame.mouse.get_pos()
             if self._is_start_moving_selected_area():
+               pygame.display.set_caption('yes')
                if not self.moving_selected_area:
                     self.start_selected_area = copy.deepcopy(self.selected_area)
                     self.moving_tiles = self._get_tiles_in_area(sarect)
@@ -442,7 +444,7 @@ class Editor:
                     self.start_mouse_position = (mpos[0] + self.camera[0], mpos[1] + self.camera[1])
                self.moving_selected_area = True
 
-            if self.moving_selected_area:
+            if self.moving_selected_area or selection_activated:
                 pass
             elif self.clicked[0] or (self.pressed[0] and self.shift):
                 pos = pygame.mouse.get_pos()
@@ -670,9 +672,20 @@ def show_grid(grid_button):
     else:
         grid_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
 
+
+def activate_selection(btn):
+    global selection_activated
+    selection_activated = not selection_activated
+    if selection_activated:
+        btn.setBackgroundColors([LIGHT_GRAY, LIGHT_GRAY])
+    else:
+        btn.setBackgroundColors([[236,]*3, LIGHT_GRAY])
+
+
 def run(screen_, filename=None):
     global screen, ctrl_pressed, shift_pressed, alt_pressed, z_pressed, fill_activated, editor
-    global transforming
+    global transforming, selection_activated
+    global selection_finished
     screen = screen_
     clock = pygame.time.Clock()
 
@@ -769,6 +782,14 @@ def run(screen_, filename=None):
     grid_button.setBgImage('images/icons/grid.png')
     grid_button.onClick = lambda: show_grid(grid_button)
 
+    selection_button = Button('')
+    selection_button.setSize(30, 30)
+    selection_button.setFixedSizes([True, True])
+    selection_button.setBorderWidth(0)
+    selection_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
+    selection_button.setBgImage('images/icons/selection.png')
+    selection_button.onClick = lambda: activate_selection(selection_button)
+
     panel.addWidget(zoom_plus_button)
     panel.addWidget(zoom_minus_button)
     panel.addWidget(resource_panel)
@@ -780,12 +801,15 @@ def run(screen_, filename=None):
     panel.addWidget(hook_button)
     panel.addWidget(transform_button)
     panel.addWidget(grid_button)
+    panel.addWidget(selection_button)
 
     panel.show()
     panel.dispose()
     # resource_panel.show()
     # resource_panel.dispose()
 
+    selection_finished = False
+    selection_activated = False
     transforming = False
     ctrl_pressed = False
     shift_pressed = False
@@ -809,6 +833,8 @@ def run(screen_, filename=None):
         editor.render(screen)
         if transforming:
             editor.transform()
+
+
 
         # state
         state.update(events)
@@ -839,7 +865,7 @@ def run(screen_, filename=None):
             else:
                 undo()
 
-        if ctrl_pressed and editor.selected_area:
+        if (ctrl_pressed or selection_activated and editor.pressed[0]) and editor.selected_area and not selection_finished:
             mx, my = pygame.mouse.get_pos()
             mx += editor.camera[0]
             my+= editor.camera[1]
@@ -926,7 +952,7 @@ def run(screen_, filename=None):
                     editor.clicked[0] = True
                     editor.pressed[0] = True
                     # selecting area
-                    if ctrl_pressed:
+                    if ctrl_pressed or (selection_activated and not editor.selected_area):
                         mx, my = pygame.mouse.get_pos()
                         mx += editor.camera[0]
                         my+= editor.camera[1]
@@ -946,6 +972,7 @@ def run(screen_, filename=None):
             elif event.type == pygame.MOUSEBUTTONUP and not tool_bar_rect.collidepoint(mpos):
                 if event.button == 1:
                     editor.pressed[0] = False
+                    selection_finished = (editor.selected_area != [])
                     if editor.moving_selected_area:
                         editor._save_moved_tiles()
                     editor.moving_selected_area = False
