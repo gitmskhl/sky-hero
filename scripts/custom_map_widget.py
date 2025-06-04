@@ -769,40 +769,7 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode((800, 600))
     import os
 
-    # stacked = StackedWidget(None)
-    # stacked.setSize(400, 100)
-    # stacked.setPosition(200, 150)
-    # base_dir = 'resources'
-
-    # current = GridLayoutV(stacked)
-    # current.setDims(1, 5)
-    # rowSpace = 20
-    # current.setRowPlacements(0, 'center', 'center')
-    # current.setRowSpace(0, rowSpace)
-    # for resource_name in os.listdir(base_dir):
-    #     for image_name in os.listdir(os.path.join(base_dir, resource_name)):
-    #         if not image_name.endswith('png'): continue
-    #         if current.isFull() and current.dims[0] < 2:
-    #             current.addRow()
-    #             current.setRowPlacements(1, 'center', 'center')
-    #             current.setRowSpace(1, rowSpace)
-    #         elif current.isFull():
-    #             stacked.addWidget(current)
-    #             current = GridLayoutV(stacked)
-    #             current.setDims(1, 5)
-    #             current.setRowPlacements(0, 'center', 'center')
-    #             current.setRowSpace(0, rowSpace)
-    #         b = Button(current)
-    #         b.setSize(32, 32)
-    #         b.setFixedSizes([True] * 2)
-    #         path = os.path.join(base_dir, resource_name, image_name)
-    #         b.setBgImage(path)
-    #         current.appendWidgetFree(b)
-    # stacked.addWidget(current)
     
-    # stacked.show()
-    # stacked.dispose()
-
     from custom_map_creator import Editor
     editor = Editor(None)
     panel = ResourcePanel(editor.resources, (2, 5))
