@@ -1,5 +1,6 @@
 import pygame
 import os
+import sys
 import json
 
 BASE_DIR = '.'
@@ -52,8 +53,8 @@ class Editor:
                         suit_situation = sorted(suits, key=lambda x: -len(x))[0]
                         tile['variant'] = Editor.TRANSFORM_RULES[suit_situation]
                     
-    def __init__(self, level=None):
-        level = level if level is not None else 7
+    def __init__(self, level):
+        level = level
         self.level = level
         self.base_tile_size = 16
         self.tile_size = 16
@@ -240,7 +241,14 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.NOFRAME)
     clock = pygame.time.Clock()
 
-    editor = Editor()
+    if len(sys.argv) > 2:
+        print('Usage: python editor.py [level]')
+        exit(1)
+    elif len(sys.argv) == 2:
+        level = int(sys.argv[1])
+    else:
+        level = 1
+    editor = Editor(level)
 
     ctrl_pressed = False
     shift_pressed = False
