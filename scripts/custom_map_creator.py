@@ -5,15 +5,16 @@ import shelve
 from collections import deque
 import copy
 import utils
-from custom_map_widget import ResourcePanel, State, HorizontalLayout, Button
+from custom_map_widget import ResourcePanel, State, HorizontalLayout, Button, MessageBox
 
 pygame.init()
 
 MAP_FILE='.levels'
 
 HISTORY_MAX=10000
-GRAY = (50,) * 3
 LIGHT_GRAY = (200,) * 3
+GRAY = (50,) * 3
+DARK_GRAY = (100, 100, 100)
 
 
 SCREEN_WIDTH = 800
@@ -682,6 +683,38 @@ def activate_selection(btn):
         btn.setBackgroundColors([[236,]*3, LIGHT_GRAY])
 
 
+def save_message_box(clock, state):
+    msg_box = MessageBox(None)
+    msg_box.setSize(400, 150)
+    msg_box.setFixedSizes([True, True])
+    msg_box.setPosition(200, 200)
+    msg_box.show()
+    msg_box.dispose()
+    inner_rect = msg_box.rect.inflate(-15, -15)
+    while True:
+        if msg_box.ok_btn.just_clicked:
+            text = msg_box.line_edit.text
+            if text:
+                pygame.display.set_caption("save as '%s'" % text)
+        elif msg_box.cancel_btn.just_clicked:
+            return
+        
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+        state.update(events)
+        msg_box.update(state)
+        
+        screen.fill("black", inner_rect) # Фон для контраста
+        msg_box.render(screen)
+        
+        pygame.display.flip()
+        clock.tick(60)
+
+
 def run(screen_, filename=None):
     global screen, ctrl_pressed, shift_pressed, alt_pressed, z_pressed, fill_activated, editor
     global transforming, selection_activated
@@ -724,7 +757,7 @@ def run(screen_, filename=None):
     save_button.setBorderWidth(0)
     save_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
     save_button.setBgImage('images/icons/diskette.png')
-    save_button.onClick = editor.save
+    save_button.onClick = lambda clock=clock, state=state: save_message_box(clock, state)
 
     fill_button = Button('')
     fill_button.setBackgroundColors([[236, ] * 3, LIGHT_GRAY])
@@ -841,8 +874,8 @@ def run(screen_, filename=None):
         state.update(events)
 
         # resource panel
-        panel.update(state)
         panel.render(screen)
+        panel.update(state)
         if resource_panel.selected_tile:
             editor.current_resource = resource_panel.selected_tile['tile']['type']
             editor.current_variant = resource_panel.selected_tile['tile']['variant']
