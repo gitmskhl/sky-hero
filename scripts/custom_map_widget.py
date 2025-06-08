@@ -163,7 +163,7 @@ class Widget:
             pygame.draw.rect(
                 surf,
                 self.borderColors[self.hovered],
-                (self.rect.x - self.borderWidth, self.rect.y - self.borderWidth, self.rect.width + 2 * self.borderWidth, self.rect.height + 2 * self.borderWidth),
+                (self.innerRect.x - self.borderWidth, self.innerRect.y - self.borderWidth, self.innerRect.width + 2 * self.borderWidth, self.innerRect.height + 2 * self.borderWidth),
                 border_radius=self.border_radius    
             )
             pygame.draw.rect(
@@ -871,26 +871,80 @@ def debug(text, position=[10, 10], fontSize=30, fontColor='red'):
     text = font.render(text, True, fontColor)
     screen.blit(text, position)
     
-
 class MessageBox(VerticalLayout):
     def __init__(self, parent):
         super().__init__(parent)
 
+        # --- Современная и чистая цветовая палитра ---
+        BG_COLOR = (248, 249, 250)      # Очень светлый серый, почти белый
+        BORDER_COLOR = (222, 226, 230)  # Мягкая, неконтрастная рамка
+        TEXT_COLOR = (33, 37, 41)       # Темный, но не чисто черный текст
+        PRIMARY_BLUE = (13, 110, 253)   # Приятный синий цвет для акцентов
+        PRIMARY_BLUE_HOVER = (10, 98, 227) # Более темный синий для наведения
+        
+        LINE_EDIT_BG = (255, 255, 255)
+        LINE_EDIT_BORDER = (206, 212, 218)
+        LINE_EDIT_BORDER_ACTIVE = PRIMARY_BLUE 
+        
+        BTN_CANCEL_BG = (248, 249, 250)
+        BTN_CANCEL_HOVER = (222, 226, 230)
+
+        # --- Настройка главного контейнера (self) ---
+        self.setBackgroundColors([BG_COLOR, BG_COLOR])
+        self.setBorderColors([BORDER_COLOR, BORDER_COLOR])
+        self.setBorderWidth(1) # Кстати, здесь лучше поставить 1, как я рекомендовал ранее
+        self.setBorderRadius(12)
+        self.setPaddings([5])
+        self.setSpace(15)
+        
+        # ===> ИЗМЕНИТЕ ЭТУ СТРОКУ <===
+        self.setPlacementy('top') # Вместо 'top'
+        # --- Создание и настройка поля для ввода текста (LineEdit) ---
         self.line_edit = LineEdit(self)
+        self.line_edit.setPlaceholder("Введите имя карты...")
+        self.line_edit.setBackgroundColors([LINE_EDIT_BG, LINE_EDIT_BG])
+        # При наведении или активации рамка становится синей
+        self.line_edit.setBorderColors([LINE_EDIT_BORDER, LINE_EDIT_BORDER_ACTIVE])
+        self.line_edit.setBorderWidth(1)
+        self.line_edit.setBorderRadius(8)
+        self.line_edit.setPaddings([10, 12, 10, 12]) # Отступы внутри поля ввода
+        self.line_edit.setFont(None, 24) # Системный шрифт, размер 24
+        self.line_edit.colors[0] = TEXT_COLOR # Установка цвета текста
+
+        # --- Создание контейнера для кнопок ---
         self.horizontal_layout = HorizontalLayout(self)
-        self.ok_btn = TextButton(self.horizontal_layout, "ok")
-        self.cancel_btn = TextButton(self.horizontal_layout, "cancel")
-        self.ok_btn.setSize(80, 20)
-        self.cancel_btn.setSize(80, 20)
-        self.ok_btn.setFixedSizes([True, True])
+        self.horizontal_layout.setBackgroundColors([BG_COLOR, BG_COLOR]) # Прозрачный фон
+        self.horizontal_layout.setBorderWidth(0)
+        self.horizontal_layout.setPlacementx("right") # Выравнивание кнопок по правому краю
+        self.horizontal_layout.setSpace(10)
+        self.horizontal_layout.setHeight(60)
+        self.horizontal_layout.setFixedSizes([False, True]) # Растягивается по ширине, фикс. высота
+        self.horizontal_layout.setPlacementy("center")
+        self.horizontal_layout.setPaddings([10])
+        # --- Создание и настройка кнопки "Cancel" (вторичное действие) ---
+        self.cancel_btn = TextButton(self.horizontal_layout, "Отмена")
+        self.cancel_btn.setSize(110, 40)
         self.cancel_btn.setFixedSizes([True, True])
+        self.cancel_btn.setFont(None, 18)
+        self.cancel_btn.setColors([TEXT_COLOR, TEXT_COLOR])
+        self.cancel_btn.setBackgroundColors([BTN_CANCEL_BG, BTN_CANCEL_HOVER])
+        self.cancel_btn.setBorderColors([LINE_EDIT_BORDER, LINE_EDIT_BORDER]) # Рамка в том же стиле
+        self.cancel_btn.setBorderWidth(1)
+        self.cancel_btn.setBorderRadius(8)
+        
+        # --- Создание и настройка кнопки "OK" (основное действие) ---
+        self.ok_btn = TextButton(self.horizontal_layout, "OK")
+        self.ok_btn.setSize(110, 40)
+        self.ok_btn.setFixedSizes([True, True])
+        self.ok_btn.setFont(None, 18)
+        self.ok_btn.setColors([WHITE, WHITE]) # Белый текст на синем фоне
+        self.ok_btn.setBackgroundColors([PRIMARY_BLUE, PRIMARY_BLUE_HOVER])
+        self.ok_btn.setBorderWidth(0) # Без рамки, т.к. есть яркий фон
+        self.ok_btn.setBorderRadius(8)
+
+        # --- Добавление виджетов в слои ---
         self.horizontal_layout.addWidget(self.cancel_btn)
         self.horizontal_layout.addWidget(self.ok_btn)
-        self.horizontal_layout.setSpace(20)
-        self.horizontal_layout.setPlacementx("center")
-        self.horizontal_layout.setBackgroundColors([GRAY, GRAY])
-        self.horizontal_layout.setSize(0, 40)
-        self.horizontal_layout.setFixedSizes([False, True])
 
         self.addWidget(self.line_edit)
         self.addWidget(self.horizontal_layout)
@@ -898,28 +952,41 @@ class MessageBox(VerticalLayout):
 
 if __name__ == "__main__":
     screen = pygame.display.set_mode((800, 600))
-    import os
 
-    
-    from custom_map_creator import Editor
+    # Создаем родительский контейнер, чтобы MessageBox мог центрироваться
+    # В реальном приложении это будет главный виджет вашего окна
+    main_container = Widget(None)
+    main_container.rect = screen.get_rect()
+    main_container.innerRect = main_container.rect
 
-    msg_box = MessageBox(None)
-    msg_box.setSize(300, 80)
+    # Создаем и настраиваем MessageBox
+    msg_box = MessageBox(main_container)
+    msg_box.setSize(400, 150)
     msg_box.setFixedSizes([True, True])
+    msg_box.positions = ['center', 'center'] # Центрируем относительно родителя
     msg_box.show()
+    
+    # dispose() вызывается для расчета всех размеров и положений
+    main_container.dispose()
     msg_box.dispose()    
     
     state = State()
     clock = pygame.time.Clock()
     events = []
-    while True:
-        clock.tick(60)
-        screen.fill(WHITE)
+    running = True
+    while running:
         events = pygame.event.get()
-        state.update(events)
-        msg_box.update(state)
-        msg_box.render(screen)
         for event in events:
             if event.type == pygame.QUIT:
-                exit()
+                running = False
+
+        state.update(events)
+        msg_box.update(state)
+        
+        screen.fill(DARK_GRAY) # Фон для контраста
+        msg_box.render(screen)
+        
         pygame.display.flip()
+        clock.tick(60)
+    
+    pygame.quit()
