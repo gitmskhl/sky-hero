@@ -33,6 +33,8 @@ class State:
         State.LAST_NUM_HOVERED = State.NUM_HOVERED
         State.NUM_HOVERED = 0
         self.mouse_pos = pygame.mouse.get_pos()
+        self.keys['backspace'] = False
+        self.keys['space'] = False
         for key in self.alhabet:
             if key in self.keys and self.keys[key]:
                 self.keys[key] = False
@@ -41,8 +43,12 @@ class State:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.mouse_clicked = True
             elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_BACKSPACE:
+                    self.keys['backspace'] = True
+                if event.key == pygame.K_SPACE:
+                    self.keys['space'] = True
                 key_name = pygame.key.name(event.key)
-                if key_name in self.keys:
+                if key_name in State.alhabet:
                     self.keys[key_name] = True
         
 
@@ -333,8 +339,9 @@ class TextButton(Button):
                 text_img = font.render(self.text, True, self.colors[0])
                 if text_img.get_width() < self.innerRect.width and text_img.get_height() < self.innerRect.height:
                     break
+                fontSize -= 1
                 count -= 1
-                if count == 0:
+                if count == 0 or fontSize <= 0:
                     raise "The text size couldn't be adjusted properly"   
             self.fontSize = fontSize
         self.font = pygame.font.Font(self.fontFamily, self.fontSize)
@@ -632,6 +639,111 @@ class GridLayoutV(VerticalLayout):
         self.dims = (self.dims[0] + 1, self.dims[1])
         
 
+class LineEdit(Widget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.placeholder = None
+        self.text = ''
+        self.text_image = None
+        self.text_rect = None
+        self.fontFamily = None
+        self.placeholder_image = None
+        self.placeholder_rect = None
+        self.colors = [BLACK, WHITE]
+        self.fontSize = None
+        self.active = False
+        self.cursor_timer_period = 30
+        self.cursor_timer = 0
+        
+    def setPlaceholder(self, placeholder):
+        self.placeholder = placeholder
+    
+    def setFont(self, fontFamily, fontSize):
+        self.setFontFamily(fontFamily)
+        self.setFontSize(fontSize)
+
+    def setFontFamily(self, fontFamily):
+        self.fontFamily = fontFamily
+
+    def setFontSize(self, fontSize):
+        self.fontSize = fontSize
+
+    def render(self, surf):
+        if not self.present or not self.visible: return
+        last_hovered = self.hovered
+        if self.active:
+            self.hovered = True
+        super().render(surf)
+        self.hovered = last_hovered
+        if self.cursor_timer > 0 and self.active:
+            cursor_y = self.innerRect.top + self.paddings[0]
+            cursor_y_dest = self.innerRect.bottom - self.paddings[2]
+            if self.text:
+                cursor_x = self.text_rect.right
+            else:
+                cursor_x = self.innerRect.top + self.paddings[3]
+            pygame.draw.line(surf, "black", (cursor_x, cursor_y), (cursor_x, cursor_y_dest), width=2)
+        if self.text:
+            surf.blit(self.text_image, self.text_rect.topleft)
+        elif self.placeholder_image and not self.text:
+            surf.blit(self.placeholder_image, self.placeholder_rect.topleft)
+
+    def update(self, state: State):
+        if not self.present: return
+        super().update(state)
+        if self.hovered:
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
+        else:
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+        if self.hovered and state.mouse_clicked:
+            self.active = True
+        elif state.mouse_clicked:
+            self.active = False
+            self.cursor_timer = 0
+
+        if self.active:
+            self.cursor_timer -= 1
+            if self.cursor_timer <= -self.cursor_timer_period:
+                self.cursor_timer = self.cursor_timer_period
+            new = False
+            for key, val in state.keys.items():
+                if val and key in State.alhabet:
+                    self.text += key
+                    new = True
+                elif val and key == 'backspace':
+                    self.text = self.text[:-1]
+                    new = True
+                elif val and key == 'space':
+                    self.text += ' '
+                    new = True
+            if new:
+                self.text_image = self.font.render(self.text, True, self.colors[0])
+                self.text_rect = self.text_image.get_rect(topleft=(self.innerRect.x + self.paddings[3], self.innerRect.y + self.paddings[0]))
+                while self.text_image.get_width() > self.innerRect.width - self.paddings[1] - self.paddings[3]:
+                    self.text = self.text[:-1]
+                    self.text_image = self.font.render(self.text, True, self.colors[0])
+                    self.text_rect = self.text_image.get_rect(topleft=(self.innerRect.x + self.paddings[3], self.innerRect.centery - self.text_image.get_height() // 2))
+                    if not self.text:
+                        break
+
+    def dispose(self):
+        if not self.present: return
+        super().dispose()
+        if self.fontSize is None:
+            count = 1000
+            fontSize = int(min(self.innerRect.size) / 1.2)
+            while True:
+                font = pygame.font.Font(self.fontFamily, fontSize)
+                self.placeholder_image = font.render(self.placeholder, True, self.colors[0])
+                if self.placeholder_image.get_width() < self.innerRect.width and self.placeholder_image.get_height() < self.innerRect.height:
+                    break
+                fontSize -= 1
+                count -= 1
+                if count == 0 or fontSize <= 0:
+                    raise "The text size couldn't be adjusted properly"
+        self.font = pygame.font.Font(self.fontFamily, self.fontSize)
+
+
 # ------------------------------- FOR THE GAME --------------------------------
 RESOURCE_PANEL_BACKGROUND_COLOR = GRAY
 
@@ -749,7 +861,8 @@ class ResourcePanel(StackedWidget):
 
 
 
-
+class MessageBox(Widget):
+    def __init__()
 
 
 
@@ -771,10 +884,19 @@ if __name__ == "__main__":
 
     
     from custom_map_creator import Editor
-    editor = Editor(None)
-    panel = ResourcePanel(editor.resources, (2, 5))
-    panel.show()
-    panel.dispose()
+    line_edit = LineEdit(None)
+    line_edit.setFontSize(20)
+    line_edit.setPosition(100, 100)
+    line_edit.setSize(200, 30)
+    line_edit.setPaddings([5, 5, 5, 5])
+    line_edit.setBackgroundColors([WHITE, LIGHT_GRAY])
+    line_edit.setBorderColors([BLACK, GRAY])
+    line_edit.setBorderWidth(1)
+    line_edit.setBorderRadius(5)
+    line_edit.setPlaceholder('Enter text here')
+    line_edit.setBorderColors([BLACK, "blue"])
+    line_edit.show()
+    line_edit.dispose()
     
     state = State()
     clock = pygame.time.Clock()
@@ -782,10 +904,10 @@ if __name__ == "__main__":
     while True:
         clock.tick(60)
         screen.fill(WHITE)
-        state.update(events)
-        panel.update(state)
-        panel.render(screen)
         events = pygame.event.get()
+        state.update(events)
+        line_edit.update(state)
+        line_edit.render(screen)
         for event in events:
             if event.type == pygame.QUIT:
                 exit()
