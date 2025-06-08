@@ -718,7 +718,7 @@ class LineEdit(Widget):
                     new = True
             if new:
                 self.text_image = self.font.render(self.text, True, self.colors[0])
-                self.text_rect = self.text_image.get_rect(topleft=(self.innerRect.x + self.paddings[3], self.innerRect.y + self.paddings[0]))
+                self.text_rect = self.text_image.get_rect(topleft=(self.innerRect.x + self.paddings[3], self.innerRect.centery - self.text_image.get_height() // 2))
                 while self.text_image.get_width() > self.innerRect.width - self.paddings[1] - self.paddings[3]:
                     self.text = self.text[:-1]
                     self.text_image = self.font.render(self.text, True, self.colors[0])
@@ -741,6 +741,8 @@ class LineEdit(Widget):
                 count -= 1
                 if count == 0 or fontSize <= 0:
                     raise "The text size couldn't be adjusted properly"
+            self.fontSize = fontSize
+            self.placeholder_rect = self.placeholder_image.get_rect(topleft=(self.innerRect.left + self.paddings[3], self.innerRect.top + self.paddings[0]))
         self.font = pygame.font.Font(self.fontFamily, self.fontSize)
 
 
@@ -860,13 +862,6 @@ class ResourcePanel(StackedWidget):
         super().addWidget(widget, space=0, arrowColors=[GRAY, GRAY])
 
 
-
-class MessageBox(Widget):
-    def __init__()
-
-
-
-
 font = pygame.font.Font(None, 30)
 def debug(text, position=[10, 10], fontSize=30, fontColor='red'):
     text = str(text)
@@ -877,6 +872,29 @@ def debug(text, position=[10, 10], fontSize=30, fontColor='red'):
     screen.blit(text, position)
     
 
+class MessageBox(VerticalLayout):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.line_edit = LineEdit(self)
+        self.horizontal_layout = HorizontalLayout(self)
+        self.ok_btn = TextButton(self.horizontal_layout, "ok")
+        self.cancel_btn = TextButton(self.horizontal_layout, "cancel")
+        self.ok_btn.setSize(80, 20)
+        self.cancel_btn.setSize(80, 20)
+        self.ok_btn.setFixedSizes([True, True])
+        self.cancel_btn.setFixedSizes([True, True])
+        self.horizontal_layout.addWidget(self.cancel_btn)
+        self.horizontal_layout.addWidget(self.ok_btn)
+        self.horizontal_layout.setSpace(20)
+        self.horizontal_layout.setPlacementx("center")
+        self.horizontal_layout.setBackgroundColors([GRAY, GRAY])
+        self.horizontal_layout.setSize(0, 40)
+        self.horizontal_layout.setFixedSizes([False, True])
+
+        self.addWidget(self.line_edit)
+        self.addWidget(self.horizontal_layout)
+
 
 if __name__ == "__main__":
     screen = pygame.display.set_mode((800, 600))
@@ -884,19 +902,12 @@ if __name__ == "__main__":
 
     
     from custom_map_creator import Editor
-    line_edit = LineEdit(None)
-    line_edit.setFontSize(20)
-    line_edit.setPosition(100, 100)
-    line_edit.setSize(200, 30)
-    line_edit.setPaddings([5, 5, 5, 5])
-    line_edit.setBackgroundColors([WHITE, LIGHT_GRAY])
-    line_edit.setBorderColors([BLACK, GRAY])
-    line_edit.setBorderWidth(1)
-    line_edit.setBorderRadius(5)
-    line_edit.setPlaceholder('Enter text here')
-    line_edit.setBorderColors([BLACK, "blue"])
-    line_edit.show()
-    line_edit.dispose()
+
+    msg_box = MessageBox(None)
+    msg_box.setSize(300, 80)
+    msg_box.setFixedSizes([True, True])
+    msg_box.show()
+    msg_box.dispose()    
     
     state = State()
     clock = pygame.time.Clock()
@@ -906,8 +917,8 @@ if __name__ == "__main__":
         screen.fill(WHITE)
         events = pygame.event.get()
         state.update(events)
-        line_edit.update(state)
-        line_edit.render(screen)
+        msg_box.update(state)
+        msg_box.render(screen)
         for event in events:
             if event.type == pygame.QUIT:
                 exit()
