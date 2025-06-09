@@ -430,7 +430,6 @@ class App:
             display_sillhouette = display_mask.to_surface(setcolor=(0, 0, 0, 128), unsetcolor=(0, 0, 0, 0))
             for pos in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 self.display_2.blit(display_sillhouette, pos)
-            # self.display_2.blit(display_sillhouette, (0, 0))
             self.display_2.blit(self.display, (0, 0))
             screen.blit(self.display_2, (0, 0))
             pygame.display.flip()

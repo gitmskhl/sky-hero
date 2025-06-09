@@ -1003,7 +1003,13 @@ class MyLevels(StackedGridLayout):
     def __init__(self, parent, dims):
         try:
             with shelve.open('.levels', 'r') as shelf:
-                filenames = list(shelf.keys())
+                filenames = [
+                    filename
+                    for filename, _ in sorted(
+                        [(key, val) for key, val in shelf.items() if isinstance(val, dict) and 'no' in val], 
+                        key=lambda conf: conf[1]['no']
+                    )
+                ]
         except:
             filenames = []
         level_names = filenames[::-1]

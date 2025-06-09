@@ -474,13 +474,8 @@ class Editor:
                     q += 1
             if q > 0:
                 filename = "%s(%d)" % (filename, q)
-            
-            # nogrid_tiles = []
-            # for tile in self.nogrid_tiles:
-            #     tile = copy.deepcopy(tile)
-            #     tile['pos'] = (tile['pos'][0] * self.k / 2, tile['pos'][1] * self.k / 2)
-            #     nogrid_tiles.append(tile)
-            
+            if 'id' not in shelf:
+                shelf['id'] = 0
             shelf[filename] = {
                     'tile_map': {str((int(k[0]), int(k[1]))): v for k, v in self.tile_map.items()},
                     'nogrid_tiles': self.nogrid_tiles,
@@ -489,7 +484,9 @@ class Editor:
                     'tile_size': 32,
                     'camera_x': self.camera[0] / self.k * 2,
                     'camera_y': self.camera[1] / self.k * 2,
+                    'no': shelf['id'],
                 }
+            shelf['id'] += 1
             
 
     def load(self, filename):
