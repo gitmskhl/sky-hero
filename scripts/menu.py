@@ -255,14 +255,14 @@ class SelectLevelMenu(Menu):
 
 class MyLevelsMenu(Menu):
     def __init__(self, app, pages: Pages, size):
-        super().__init__(pages, size, paddings=[50, 20, 0, 20], space=200)
+        super().__init__(pages, size, paddings=[50, 20, 0, 20], space=20)
         self.app = app
         br = 40
 
         # grid
 
         self.num_columns = 1
-        dims = (3, self.num_columns)
+        dims = (6, self.num_columns)
         self.levels_grid_layout = MyLevels(self, dims)
         self.levels_grid_layout.setTransparentBackground(True)
         self.broker = New2LastBroker(pages, self.levels_grid_layout)
