@@ -737,7 +737,7 @@ def attempt_save(filename=None, clock=None, state=None):
     if _main_spawners_count() != 1:
         last_screen = pygame.Surface(screen.get_size())
         last_screen.blit(screen, (0, 0))
-        warning_box(clock, state, "На карте должен быть ровно один главный персонаж")
+        warning_box(clock, state, "There must be exactly one hero spawner on the map")
         screen.blit(last_screen, (0, 0))
         return False
     editor.save(filename if filename else 'untitled')
@@ -757,7 +757,6 @@ def save_message_box(clock, state):
             text = msg_box.line_edit.text
             if text and attempt_save(text, clock, state):
                 print("saving the level as '%s'" % text)
-                editor.save(text)
                 return
         elif msg_box.cancel_btn.just_clicked:
             return
