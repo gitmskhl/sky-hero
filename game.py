@@ -30,10 +30,11 @@ pygame.display.set_caption("Sky Hero")
 clock = pygame.time.Clock()
 achieved_level = 1
 level = 1
+level_config = None
 
 pygame.init()
 class App:
-    def __init__(self):
+    def __init__(self, level_config=None):
         gc.collect()
         self.display = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
         self.display_2 = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -41,7 +42,7 @@ class App:
         self.running = True
         self.level = level
         self.achieved_level = achieved_level
-        self.map = Map(level)
+        self.map = Map(level, level_config=level_config)
         self.main_player = Player('entities/player/', *self.map.start_pos(), self.map, self)
         self._init_enemies()
         self.projectiles = [] # [[x, y], speed, timer]
@@ -125,8 +126,14 @@ class App:
         self.combo = Combo('COMBO')
         self.lesson_tour_stop = False
 
+    def load_my_own_level(self, config):
+        global level_config
+        level_config = config
+        self.go_to_game()
+
     def load_level(self, lvl):
-        global level
+        global level, level_config
+        level_config = None
         if lvl > self.achieved_level: return
         level = lvl
         self.__init__()
@@ -143,8 +150,10 @@ class App:
         for sfx in self.sfx.values():
             sfx.stop()
 
-    def go_to_game(self):
-        global STATE
+    def go_to_game(self, from_main_menu=False):
+        global STATE, level_config
+        if from_main_menu:
+            level_config = None
         STATE = 'game'
         self.pause = False
         self.running = True
@@ -167,7 +176,7 @@ class App:
 
     def _new_game(self):
         global level, current_tour
-        self.__init__()
+        self.__init__(level_config)
         if level < 0:
             current_tour -= 1
             level += 1
@@ -259,17 +268,18 @@ class App:
                 self.main_menu_run()
             else:
                 self.run_game()
+                level_config = None
         
 
     def run_game(self):
-        global level, STATE
+        global level, STATE, level_config
         if level < 0:
             self.lesson_tour_run()
             if not self.tour_running:
                 STATE = 'menu'
                 return
         STATE = 'game'
-        self.__init__()
+        self.__init__(level_config=level_config)
         pygame.mixer.music.play(-1)
         self.sfx['ambience'].play(-1)
         while self.running:
@@ -284,9 +294,12 @@ class App:
                 if self.win_timer > 60:
                     self.transition += 1
                     if self.transition > 30:
-                        level += 1
-                        save()
-                        self.__init__()
+                        if level_config:
+                            self.go_to_main_menu()
+                        else:
+                            level += 1
+                            save()
+                            self.__init__()
             
             if self.dead > 60:
                 self.transition += 1
@@ -303,7 +316,7 @@ class App:
             if self.dead > 0 or self.main_player.dead:
                 self.dead += 1
                 if self.dead > 100:
-                    self.__init__()
+                    self.__init__(level_config)
                     self.dead = 0
             else:
                 self.main_player.update()
@@ -426,6 +439,7 @@ class App:
         STATE = 'game'
 
 def save():
+    if level_config: return
     global level, achieved_level
     if level < achieved_level: return
     print('saving: level = %d' % level)

@@ -1,4 +1,5 @@
 import pygame
+import shelve
 from scripts.utils import load_image
 
 pygame.init()
@@ -1063,7 +1064,10 @@ class MyLevels(StackedGridLayout):
         btn.setBackgroundColors(["black", (240, 240, 0)])
         btn.setBorderColors([self.style["button_border"], self.style["accent_darker"]])
 
-        btn.onClick = lambda b=btn: self.on_level_select(b)
+        with shelve.open(".levels", 'r') as shelf:
+            level_config = shelf[level_name]
+
+        btn.onClick = lambda config=level_config: self.parent.app.load_my_own_level(config)
 
         self.addWidget(btn)
 

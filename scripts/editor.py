@@ -53,7 +53,7 @@ class Editor:
                         suit_situation = sorted(suits, key=lambda x: -len(x))[0]
                         tile['variant'] = Editor.TRANSFORM_RULES[suit_situation]
                     
-    def __init__(self, level):
+    def __init__(self, level, level_config=None):
         level = level
         self.level = level
         self.base_tile_size = 16
@@ -77,7 +77,10 @@ class Editor:
         #history
         self.history = []
         self.history_index = 0
-        self.load()
+        if level_config:
+            self.load_from_config(level_config)
+        else:
+            self.load()
 
     def _resize_resources(self):
         for dirname in os.listdir('resources'):
@@ -223,6 +226,15 @@ class Editor:
                 },
                 f
             )
+
+    def load_from_config(self, level_config):
+        self.tile_map = {tuple(map(int, [x.replace('(', '').replace(')', '') for x in k.split(',')])): v for k, v in level_config['tile_map'].items()}
+        self.nogrid_tiles = level_config['nogrid_tiles']
+        self.tile_size = level_config['tile_size']
+        self.camera = [level_config['camera_x'], level_config['camera_y']]
+        self.k = self.tile_size // 16
+        self._resize_resources()
+
 
     def load(self):
         try:

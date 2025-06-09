@@ -165,7 +165,7 @@ class MainMenu(ButtonsMenu):
         self.app = app
         br = 40
         self.play_button = Button(self.root, text='Play', border_radius=br)
-        self.play_button.connect(self.app.go_to_game)
+        self.play_button.connect(lambda: self.app.go_to_game(from_main_menu=True))
         self.create_level_button = Button(self.root, text='Create level', border_radius=br)
         self.create_level_button.connect(run)
         

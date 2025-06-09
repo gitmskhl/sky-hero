@@ -9,8 +9,8 @@ from particle import Particles
 from random import random
 
 class Map(Editor):
-    def __init__(self, level):
-        super().__init__(level)
+    def __init__(self, level, level_config=None):
+        super().__init__(level, level_config=level_config)
         self.background_image = load_image('images/background.png', 0, BLACK, (SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clouds = Clouds(count=30)
         self._init_leaves()
