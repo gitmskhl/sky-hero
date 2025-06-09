@@ -215,6 +215,7 @@ class Editor:
         self.clicked = [False, False, False]
 
     def save(self):
+        assert False, 'It is impossible'
         with open(BASE_DIR + f'/maps/map_level{self.level}.json', 'w') as f:
             json.dump(
                 {
