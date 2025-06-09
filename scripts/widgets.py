@@ -742,9 +742,12 @@ class New2LastBroker(Widget):
         return getattr(self.newObject, name)        
 
     def update(self, mouse_pos, clicked):
+        global NUM_HOVERED
         self.state.mouse_clicked = clicked
         self.state.mouse_pos = mouse_pos
         self.newObject.update(self.state)
+        NUM_HOVERED += State.NUM_HOVERED
+        State.NUM_HOVERED = 0
 
     def render(self, surf, opacity=None):
         self.newObject.render(surf)
