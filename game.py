@@ -3,6 +3,8 @@ import sys
 import pickle
 import os
 import copy
+import gc
+
 from scripts.menu import ButtonsMenu
 from scripts.map import Map
 from scripts.player import Player
@@ -14,8 +16,9 @@ from scripts.menu import MainMenu, SelectLevelMenu, StartMenu, SettingsMenu, Adv
 from scripts.widgets import Pages
 from scripts import widgets
 from scripts.combo import Combo
+from scripts.custom_map_creator import run
+
 from tour import Tour_1, Tour_2, Tour_3, Tour_4, Tour_5
-import gc
 
 from random import random
 from math import pi, cos, sin
@@ -104,7 +107,7 @@ class App:
 
             mmenu = MainMenu(self, self.main_menu, size)
             select_level_menu = SelectLevelMenu(self, self.main_menu, size)
-            my_levels_menu = MyLevelsMenu(self, self.main_menu, size)
+            self.my_levels_menu = MyLevelsMenu(self, self.main_menu, size)
 
             pygame.mixer.music.load('sfx/music.wav')
             pygame.mixer.music.set_volume(0.5)
@@ -117,7 +120,7 @@ class App:
             }
             
             self.play_menu.addLayouts([start_menu, settings_menu, advanced_settings_menu])
-            self.main_menu.addLayouts([mmenu, select_level_menu, my_levels_menu])
+            self.main_menu.addLayouts([mmenu, select_level_menu, self.my_levels_menu])
             # enemy icon
             enemy_img = self.map.resources['spawners'][1]
             self.small_enemy_img = pygame.transform.scale(enemy_img, (enemy_img.get_width() / 1.5, enemy_img.get_height() / 1.5))
@@ -125,6 +128,11 @@ class App:
         self.pause = False
         self.combo = Combo('COMBO')
         self.lesson_tour_stop = False
+
+    def open_map_creator(self):
+        run()
+        self.my_levels_menu.refresh_levels()
+        
 
     def load_my_own_level(self, config):
         global level_config

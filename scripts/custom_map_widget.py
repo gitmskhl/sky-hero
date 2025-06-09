@@ -280,18 +280,18 @@ class StackedWidget(Widget):
         # self.dispose()
     
     def render(self, surf):
-        if not self.present or not self.visible: return
+        if not self.present or not self.visible or not self.widgets: return
         super().render(surf)
         for kidWidget in self.widgets[self.current_idx].widgets:
             kidWidget.render(surf)
     
     def update(self, state):
-        if not self.present: return
+        if not self.present or not self.widgets: return
         super().update(state)
         self.widgets[self.current_idx].update(state)
     
     def dispose(self, changePageIdx=True):
-        if not self.present: return
+        if not self.present or not self.widgets: return
         super().dispose()
         for layout in self.widgets:
             layout.setPosition(*self.innerRect.topleft)
@@ -1001,8 +1001,14 @@ class MyLevels(StackedGridLayout):
     - dims: кортеж (rows, cols) для сетки уровней на странице.
     - level_names: СПИСОК С НАЗВАНИЯМИ УРОВНЕЙ для создания кнопок.
     """
-    def __init__(self, parent, dims, level_names):
-        level_names = level_names[::-1]
+    def __init__(self, parent, dims):
+        try:
+            with shelve.open('.levels', 'r') as shelf:
+                filenames = list(shelf.keys())
+        except:
+            filenames = []
+        level_names = filenames[::-1]
+        print('level names: %s' % level_names)
         self.style = {
             "bg": (240, 242, 245),
             "border": (220, 223, 227),
@@ -1083,6 +1089,7 @@ class MyLevels(StackedGridLayout):
 
     def render(self, surf):
         super().render(surf)
+
 
 
 # ======================================================================

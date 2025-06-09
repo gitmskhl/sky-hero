@@ -5,7 +5,6 @@ import shelve
 
 from .custom_map_widget import MyLevels
 from .widgets import New2LastBroker
-from .custom_map_creator import run
 
 if __name__ == "__main__":
     from widgets import *
@@ -167,7 +166,7 @@ class MainMenu(ButtonsMenu):
         self.play_button = Button(self.root, text='Play', border_radius=br)
         self.play_button.connect(lambda: self.app.go_to_game(from_main_menu=True))
         self.create_level_button = Button(self.root, text='Create level', border_radius=br)
-        self.create_level_button.connect(run)
+        self.create_level_button.connect(app.open_map_creator)
         
         # select level button
         self.select_level_button = Button(self.root, text='Levels', border_radius=br)
@@ -261,27 +260,28 @@ class MyLevelsMenu(Menu):
         br = 40
 
         # grid
-        try:
-            with shelve.open('.levels', 'r') as shelf:
-                nlevels = len(shelf)
-                filenames = list(shelf.keys())
-        except:
-            nlevels = 0
-            filenames = []
 
-        self.num_columns = num_columns = 3
-        num_rows = math.ceil(nlevels / num_columns)
-        dims = (num_rows, num_columns)
-        self.levels_grid_layout = MyLevels(self, dims, filenames)
+        self.num_columns = 1
+        dims = (3, self.num_columns)
+        self.levels_grid_layout = MyLevels(self, dims)
         self.levels_grid_layout.setTransparentBackground(True)
+        self.broker = New2LastBroker(pages, self.levels_grid_layout)
 
         self.bottom_layout = HorizontalLayout(self.root, paddings=[0] * 4, space=10, fixedSizes=(False, True), h=100)
         self.back_button = Button(self.root, h=80, text='< Back', border_radius=br, fixedSizes=(False, True))
         self.back_button.connect(lambda: pages.setPage(1))
         self.bottom_layout.addWidget(self.back_button)
         
-        self.addWidget(New2LastBroker(pages, self.levels_grid_layout))
+        self.addWidget(self.broker)
         self.addWidget(self.bottom_layout)
+    
+    def refresh_levels(self):
+        self.levels_grid_layout = MyLevels(self, self.levels_grid_layout.dims)
+        self.levels_grid_layout.setTransparentBackground(True)
+        self.broker = New2LastBroker(self.pages, self.levels_grid_layout)
+        self.widgets[0] = self.broker
+        self.dispose()
+
 
 
 if __name__ == "__main__":
