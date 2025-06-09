@@ -1105,7 +1105,40 @@ class MyLevels(StackedGridLayout):
     def render(self, surf):
         super().render(surf)
 
+class WarningMessageBox(VerticalLayout):
+    def __init__(self, parent, text="Warning"):
+        super().__init__(parent)
 
+        BG_COLOR = (248, 215, 218)  # light red background
+        BORDER_COLOR = (220, 53, 69)  # red border
+        TEXT_COLOR = (114, 28, 36)   # dark red text
+        PRIMARY_RED = (220, 53, 69)  # red for button
+        PRIMARY_RED_HOVER = (200, 30, 50)
+
+        self.setBackgroundColors([BG_COLOR, BG_COLOR])
+        self.setBorderColors([BORDER_COLOR, BORDER_COLOR])
+        self.setBorderWidth(1)
+        self.setBorderRadius(12)
+        self.setPaddings([10])
+        self.setSpace(15)
+
+        self.message_label = TextButton(self, text)
+        self.message_label.setClickable(False)
+        self.message_label.setBackgroundColors([BG_COLOR, BG_COLOR])
+        self.message_label.setBorderWidth(0)
+        self.message_label.setColors([TEXT_COLOR, TEXT_COLOR])
+
+        self.ok_btn = TextButton(self, "OK")
+        self.ok_btn.setSize(110, 40)
+        self.ok_btn.setFixedSizes([True, True])
+        self.ok_btn.setFont(None, 18)
+        self.ok_btn.setColors([WHITE, WHITE])
+        self.ok_btn.setBackgroundColors([PRIMARY_RED, PRIMARY_RED_HOVER])
+        self.ok_btn.setBorderWidth(0)
+        self.ok_btn.setBorderRadius(8)
+
+        self.addWidget(self.message_label)
+        self.addWidget(self.ok_btn)
 
 # ======================================================================
 # ПРИМЕР ИСПОЛЬЗОВАНИЯ

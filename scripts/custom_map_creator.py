@@ -6,7 +6,14 @@ from collections import deque
 import copy
 
 from . import utils
-from .custom_map_widget import ResourcePanel, State, HorizontalLayout, Button, MessageBox
+from .custom_map_widget import (
+    ResourcePanel,
+    State,
+    HorizontalLayout,
+    Button,
+    MessageBox,
+    WarningMessageBox,
+)
 
 pygame.init()
 
@@ -690,6 +697,52 @@ def activate_selection(btn):
     else:
         btn.setBackgroundColors([[236,]*3, LIGHT_GRAY])
 
+def _main_spawners_count():
+    count = 0
+    for tile in editor.tile_map.values():
+        if tile.get("resource") == "spawners" and tile.get("variant") == 0:
+            count += 1
+    return count
+
+def warning_box(clock, state, text):
+    box = WarningMessageBox(None, text)
+    width, height = 500, 170
+    box.setSize(width, height)
+    box.setFixedSizes([True, True])
+    box.setPosition((SCREEN_WIDTH - width) // 2, (SCREEN_HEIGHT - height) // 2)
+    box.show()
+    box.dispose()
+    dim_surf = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+    dim_surf.fill((0, 0, 0, 120))
+    while True:
+        if box.ok_btn.just_clicked:
+            return
+
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+        state.update(events)
+        box.update(state)
+
+        screen.blit(dim_surf, (0, 0))
+        box.render(screen)
+        pygame.display.flip()
+        clock.tick(60)
+    
+
+def attempt_save(filename=None, clock=None, state=None):
+    if _main_spawners_count() != 1:
+        last_screen = pygame.Surface(screen.get_size())
+        last_screen.blit(screen, (0, 0))
+        warning_box(clock, state, "На карте должен быть ровно один главный персонаж")
+        screen.blit(last_screen, (0, 0))
+        return False
+    editor.save(filename if filename else 'untitled')
+    return True
+
 
 def save_message_box(clock, state):
     msg_box = MessageBox(None)
@@ -702,7 +755,7 @@ def save_message_box(clock, state):
     while True:
         if msg_box.ok_btn.just_clicked:
             text = msg_box.line_edit.text
-            if text:
+            if text and attempt_save(text, clock, state):
                 print("saving the level as '%s'" % text)
                 editor.save(text)
                 return
@@ -959,7 +1012,7 @@ def run(screen_=None, filename=None):
                     else:
                         undo()
                 elif event.key == pygame.K_s:
-                    editor.save()
+                    save_message_box(clock, state)
                 elif event.key == pygame.K_t:
                     editor.transform()
                 elif event.key == pygame.K_f:
