@@ -3,6 +3,7 @@ import sys
 import pickle
 import os
 import copy
+import shelve
 import gc
 
 from scripts.menu import ButtonsMenu
@@ -132,8 +133,13 @@ class App:
     def open_map_creator(self):
         run()
         self.my_levels_menu.refresh_levels()
-        
 
+    def delete_level(self, level_name):
+        with shelve.open('.levels') as shelf:
+            del shelf[level_name]
+        self.my_levels_menu.refresh_levels()
+
+        
     def load_my_own_level(self, config):
         global level_config
         level_config = config

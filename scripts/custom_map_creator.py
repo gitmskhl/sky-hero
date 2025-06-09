@@ -471,7 +471,7 @@ class Editor:
             nogrid_tiles = []
             for tile in self.nogrid_tiles:
                 tile = copy.deepcopy(tile)
-                tile['pos'] = tile['pos'] * self.k / 2
+                tile['pos'] = (tile['pos'][0] * self.k / 2, tile['pos'][1] * self.k / 2)
                 nogrid_tiles.append(tile)
             
             shelf[filename] = {

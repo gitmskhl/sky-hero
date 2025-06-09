@@ -186,7 +186,7 @@ class MainMenu(ButtonsMenu):
 
 class SelectLevelMenu(Menu):
     def __init__(self, app, pages: Pages, size):
-        super().__init__(pages, size, paddings=[50, 20, 0, 20], space=200)
+        super().__init__(pages, size, paddings=[50, 20, 0, 20], space=20)
         self.app = app
         br = 40
 

@@ -792,7 +792,6 @@ class ResourcePanel(StackedWidget):
         tile_size = next(iter(resources.values()))[0].get_width()
         space = 10
         self.panel_width, self.panel_height = (tile_size + space * 3) * dims[1], (tile_size + 5) * dims[0]
-        print(self.panel_width, self.panel_height)
         placements = ['center', 'center']
         grid = None
         for resource_name, images in self.resources.items():
@@ -1008,7 +1007,6 @@ class MyLevels(StackedGridLayout):
         except:
             filenames = []
         level_names = filenames[::-1]
-        print('level names: %s' % level_names)
         self.style = {
             "bg": (240, 242, 245),
             "border": (220, 223, 227),
@@ -1059,9 +1057,13 @@ class MyLevels(StackedGridLayout):
         return grid
 
     def add_level_button(self, level_name):
-        btn = TextButton(self, text=str(level_name))
-        
-        btn.setFont(None, None) 
+        container = HorizontalLayout(self)
+        container.setSpace(10)
+        container.setPlacements('center', 'center')
+
+        btn = TextButton(container, text=str(level_name))
+        btn.setFont(None, None)
+
         
         btn.setPaddings([10])
         btn.setBorderRadius(12)
@@ -1075,7 +1077,20 @@ class MyLevels(StackedGridLayout):
 
         btn.onClick = lambda config=level_config: self.parent.app.load_my_own_level(config)
 
-        self.addWidget(btn)
+        del_btn = TextButton(container, "X")
+        del_btn.setSize(30, 30)
+        del_btn.setFixedSizes([True, True])
+        del_btn.setFont(None, 20)
+        del_btn.setColors([(255, 255, 255), (255, 255, 255)])
+        del_btn.setBackgroundColors([(200, 0, 0), (255, 0, 0)])
+        del_btn.setBorderColors([(150, 0, 0), (180, 0, 0)])
+        del_btn.setBorderRadius(8)
+        del_btn.onClick = lambda name=level_name: self.parent.app.delete_level(name)
+
+        container.addWidget(btn)
+        container.addWidget(del_btn)
+
+        self.addWidget(container)
 
     def addWidget(self, widget):
         if self.current_grid is None or self.current_grid.isFull():
