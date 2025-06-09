@@ -711,6 +711,8 @@ def warning_box(clock, state, text):
     box.dispose()
     dim_surf = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
     dim_surf.fill((0, 0, 0, 120))
+    screen.blit(dim_surf, (0, 0))
+    inner_rect = box.rect.inflate(-15, -15)
     while True:
         if box.ok_btn.just_clicked:
             return
@@ -724,10 +726,10 @@ def warning_box(clock, state, text):
         state.update(events)
         box.update(state)
 
-        screen.blit(dim_surf, (0, 0))
         box.render(screen)
         pygame.display.flip()
         clock.tick(60)
+        screen.fill("black", inner_rect)
     
 
 def attempt_save(filename=None, clock=None, state=None):
