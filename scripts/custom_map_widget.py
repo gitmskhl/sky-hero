@@ -1135,13 +1135,17 @@ class WarningMessageBox(VerticalLayout):
         self.message_label.setColors([TEXT_COLOR, TEXT_COLOR])
 
         self.ok_btn = TextButton(self, "OK")
+                # --- Создание и настройка кнопки "OK" (основное действие) ---
         self.ok_btn.setSize(110, 40)
         self.ok_btn.setFixedSizes([True, True])
         self.ok_btn.setFont(None, 18)
-        self.ok_btn.setColors([WHITE, WHITE])
+        self.ok_btn.setColors([WHITE, WHITE]) # Белый текст на синем фоне
         self.ok_btn.setBackgroundColors([PRIMARY_RED, PRIMARY_RED_HOVER])
         self.ok_btn.setBorderWidth(0)
         self.ok_btn.setBorderRadius(8)
+        # добавляем отступ слева и снизу
+        self.ok_btn.setMargins([0, 0, 10, 10])
+
 
         self.addWidget(self.message_label)
         self.addWidget(self.ok_btn)
