@@ -4,8 +4,9 @@ import sys
 import shelve
 from collections import deque
 import copy
-import utils
-from custom_map_widget import ResourcePanel, State, HorizontalLayout, Button, MessageBox
+
+from . import utils
+from .custom_map_widget import ResourcePanel, State, HorizontalLayout, Button, MessageBox
 
 pygame.init()
 
@@ -695,7 +696,9 @@ def save_message_box(clock, state):
         if msg_box.ok_btn.just_clicked:
             text = msg_box.line_edit.text
             if text:
-                pygame.display.set_caption("save as '%s'" % text)
+                print("saving the level as '%s'" % text)
+                editor.save(text)
+                return
         elif msg_box.cancel_btn.just_clicked:
             return
         
@@ -715,10 +718,12 @@ def save_message_box(clock, state):
         clock.tick(60)
 
 
-def run(screen_, filename=None):
+def run(screen_=None, filename=None):
     global screen, ctrl_pressed, shift_pressed, alt_pressed, z_pressed, fill_activated, editor
     global transforming, selection_activated
     global selection_finished
+    if screen_ is None:
+        screen_ = pygame.display.get_surface()
     screen = screen_
     clock = pygame.time.Clock()
 

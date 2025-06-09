@@ -1,7 +1,11 @@
 import pygame
 import os
-import random
 import math
+import shelve
+
+from .custom_map_widget import MyLevels
+from .widgets import New2LastBroker
+from .custom_map_creator import run
 
 if __name__ == "__main__":
     from widgets import *
@@ -162,7 +166,8 @@ class MainMenu(ButtonsMenu):
         br = 40
         self.play_button = Button(self.root, text='Play', border_radius=br)
         self.play_button.connect(self.app.go_to_game)
-        self.new_game_button = Button(self.root, text='Create level', border_radius=br)
+        self.create_level_button = Button(self.root, text='Create level', border_radius=br)
+        self.create_level_button.connect(run)
         
         # select level button
         self.select_level_button = Button(self.root, text='Levels', border_radius=br)
@@ -173,7 +178,7 @@ class MainMenu(ButtonsMenu):
         self.exit_button.connect(self.app.exit_game)
         
         self.addWidget(self.play_button)
-        self.addWidget(self.new_game_button)
+        self.addWidget(self.create_level_button)
         self.addWidget(self.select_level_button)
         self.addWidget(self.exit_button)
     
@@ -219,6 +224,7 @@ class SelectLevelMenu(Menu):
         self.my_levels_button = Button(self.root,  h=80, text='My levels >', border_radius=br, fixedSizes=(False, True))
         self.back_button = Button(self.root, h=80, text='< Back', border_radius=br, fixedSizes=(False, True))
         self.back_button.connect(lambda: pages.setPage(0))
+        self.my_levels_button.connect(lambda: pages.setPage(2))
         self.bottom_layout.addWidget(self.back_button)
         self.bottom_layout.addWidget(self.my_levels_button)
         
@@ -247,6 +253,36 @@ class SelectLevelMenu(Menu):
                     
                     self.levels_grid_layout.grid[i - 1][j - 1].colors = colors
                     q += 1
+
+class MyLevelsMenu(Menu):
+    def __init__(self, app, pages: Pages, size):
+        super().__init__(pages, size, paddings=[50, 20, 0, 20], space=200)
+        self.app = app
+        br = 40
+
+        # grid
+        try:
+            with shelve.open('.levels', 'r') as shelf:
+                nlevels = len(shelf)
+                filenames = list(shelf.keys())
+        except:
+            nlevels = 0
+            filenames = []
+
+        self.num_columns = num_columns = 3
+        num_rows = math.ceil(nlevels / num_columns)
+        dims = (num_rows, num_columns)
+        self.levels_grid_layout = MyLevels(self, dims, filenames)
+        self.levels_grid_layout.setTransparentBackground(True)
+
+        self.bottom_layout = HorizontalLayout(self.root, paddings=[0] * 4, space=10, fixedSizes=(False, True), h=100)
+        self.back_button = Button(self.root, h=80, text='< Back', border_radius=br, fixedSizes=(False, True))
+        self.back_button.connect(lambda: pages.setPage(1))
+        self.bottom_layout.addWidget(self.back_button)
+        
+        self.addWidget(New2LastBroker(pages, self.levels_grid_layout))
+        self.addWidget(self.bottom_layout)
+
 
 if __name__ == "__main__":
     screen = pygame.display.set_mode((800, 600), pygame.NOFRAME)

@@ -10,7 +10,7 @@ from scripts.enemy import Enemy
 from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT
 from scripts.utils import load_image
 from scripts.spark import Spark
-from scripts.menu import MainMenu, SelectLevelMenu, StartMenu, SettingsMenu, AdvancedSettingsMenu
+from scripts.menu import MainMenu, SelectLevelMenu, StartMenu, SettingsMenu, AdvancedSettingsMenu, MyLevelsMenu
 from scripts.widgets import Pages
 from scripts import widgets
 from scripts.combo import Combo
@@ -103,6 +103,7 @@ class App:
 
             mmenu = MainMenu(self, self.main_menu, size)
             select_level_menu = SelectLevelMenu(self, self.main_menu, size)
+            my_levels_menu = MyLevelsMenu(self, self.main_menu, size)
 
             pygame.mixer.music.load('sfx/music.wav')
             pygame.mixer.music.set_volume(0.5)
@@ -115,7 +116,7 @@ class App:
             }
             
             self.play_menu.addLayouts([start_menu, settings_menu, advanced_settings_menu])
-            self.main_menu.addLayouts([mmenu, select_level_menu])
+            self.main_menu.addLayouts([mmenu, select_level_menu, my_levels_menu])
             # enemy icon
             enemy_img = self.map.resources['spawners'][1]
             self.small_enemy_img = pygame.transform.scale(enemy_img, (enemy_img.get_width() / 1.5, enemy_img.get_height() / 1.5))
@@ -192,7 +193,7 @@ class App:
             self.enemies.append(Enemy('entities/enemy/', *pos, self.map, self))
 
     def main_menu_run(self):
-        if not hasattr(self, 'main_menu_backgroun'):
+        if not hasattr(self, 'main_menu_background'):
             self.main_menu_background = load_image('images/menu_bg.jpeg', scale=1, size=screen.get_size())
         self.main_menu_running = True
         self.main_menu.setPage(0)

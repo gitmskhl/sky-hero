@@ -1,5 +1,7 @@
 import pygame
 
+from .custom_map_widget import State
+
 pygame.init()
 
 GRAY = (100, 100, 100)
@@ -729,6 +731,28 @@ class GradualStoryWidget(FloatWidget):
         glabel.render(surf, opacity=opacity)
 
 
+class New2LastBroker(Widget):
+    def __init__(self, root, newObject):
+        super().__init__(root, newObject.fixedSizes)
+        self.newObject = newObject
+        self.disposed = False
+        self.state = State()
+
+    def __getattr__(self, name):
+        return getattr(self.newObject, name)        
+
+    def update(self, mouse_pos, clicked):
+        self.state.mouse_clicked = clicked
+        self.state.mouse_pos = mouse_pos
+        self.newObject.update(self.state)
+
+    def render(self, surf, opacity=None):
+        self.newObject.render(surf)
+
+    def dispose(self):
+        if not self.disposed:
+            self.newObject.dispose()
+            self.disposed = True
 
 class Pages:
     def __init__(self, size):

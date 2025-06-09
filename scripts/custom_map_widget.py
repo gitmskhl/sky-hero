@@ -1,5 +1,5 @@
 import pygame
-from utils import load_image
+from scripts.utils import load_image
 
 pygame.init()
 
@@ -78,6 +78,11 @@ class Widget:
         self.present = True
         self.visible = True
         self.hovered = False
+
+        self.transparentBackground = False
+
+    def setTransparentBackground(self, transparentBackground):
+        self.transparentBackground = transparentBackground
 
     def setVisible(self, visible):
         self.visible = visible
@@ -158,7 +163,7 @@ class Widget:
             self.just_clicked = True
 
     def render(self, surf):
-        if not self.present or not self.visible: return
+        if not self.present or not self.visible or self.transparentBackground: return
         if self.innerRect.width > 0 and self.innerRect.height > 0:
             pygame.draw.rect(
                 surf,
@@ -216,6 +221,11 @@ class StackedWidget(Widget):
         self.setBackgroundColors([WHITE, WHITE])
         self.setBorderWidth(0)
     
+    def setTransparentBackground(self, transparentBackground):
+        super().setTransparentBackground(transparentBackground)
+        for widget in self.widgets:
+            widget.setTransparentBackground(transparentBackground)
+
     def addWidget(self, widget, space=20, arrowColors=[LIGHT_GRAY, GRAY]):
         layout = HorizontalLayout(self)
         layout.hide()
@@ -359,6 +369,11 @@ class Layout(Widget):
         super().__init__(parent)
         self.widgets: list[Widget] = []
     
+    def setTransparentBackground(self, transparentBackground):
+        super().setTransparentBackground(transparentBackground)
+        for widget in self.widgets:
+            widget.setTransparentBackground(transparentBackground)
+
     def popWidget(self):
         self.widgets.pop()
 
@@ -483,7 +498,7 @@ class VerticalLayout(Layout):
         self.placementx = 'left'  # 'left', ''center' or 'right
         self.placementy = "center" # 'top', 'center' or 'bottom'
         self.space = 0
-    
+
     def setSpace(self, space):
         self.space = space
 
@@ -638,6 +653,26 @@ class GridLayoutV(VerticalLayout):
         VerticalLayout.addWidget(self, HorizontalLayout(self))
         self.dims = (self.dims[0] + 1, self.dims[1])
         
+class StackedGridLayout(StackedWidget):
+    def __init__(self, parent, dims):
+        super().__init__(parent)
+        self.dims = list(dims)
+        self.current_grid = None
+    
+    def addWidget(self, widget):
+        if self.current_grid is None or self.current_grid.isFull():
+            self.current_grid = GridLayoutV(self)
+            self.current_grid.setDims(*self.dims)
+            self.current_grid.setBorderWidth(0)
+            self.current_grid.setAllRows('setPlacements', 'center', 'center')
+            self.current_grid.setAllRows('setSpace', 10)
+            self.current_grid.setAllRows('setBackgroundColors', [RESOURCE_PANEL_BACKGROUND_COLOR] * 2)
+            self.current_grid.setAllRows('setBorderWidth', 0)
+            super().addWidget(self.current_grid)
+        self.current_grid.appendWidgetFree(widget)
+
+    
+
 
 class LineEdit(Widget):
     def __init__(self, parent):
@@ -950,29 +985,156 @@ class MessageBox(VerticalLayout):
         self.addWidget(self.horizontal_layout)
 
 
-if __name__ == "__main__":
-    screen = pygame.display.set_mode((800, 600))
+# ----------------------------------- ONLY FOR THE GAME -------------------------------------
+# ======================================================================
+# НОВЫЙ КЛАСС ВЫБОРА УРОВНЯ - MyLevels (Версия 2.0)
+# Замените старый класс MyLevels на этот
+# ======================================================================
 
-    # Создаем родительский контейнер, чтобы MessageBox мог центрироваться
-    # В реальном приложении это будет главный виджет вашего окна
-    main_container = Widget(None)
-    main_container.rect = screen.get_rect()
-    main_container.innerRect = main_container.rect
-
-    # Создаем и настраиваем MessageBox
-    msg_box = MessageBox(main_container)
-    msg_box.setSize(400, 150)
-    msg_box.setFixedSizes([True, True])
-    msg_box.positions = ['center', 'center'] # Центрируем относительно родителя
-    msg_box.show()
+class MyLevels(StackedGridLayout):
+    """
+    Красивый и современный виджет для выбора уровня.
     
-    # dispose() вызывается для расчета всех размеров и положений
-    main_container.dispose()
-    msg_box.dispose()    
+    Принимает:
+    - parent: родительский виджет.
+    - dims: кортеж (rows, cols) для сетки уровней на странице.
+    - level_names: СПИСОК С НАЗВАНИЯМИ УРОВНЕЙ для создания кнопок.
+    """
+    def __init__(self, parent, dims, level_names):
+        level_names = level_names[::-1]
+        self.style = {
+            "bg": (240, 242, 245),
+            "border": (220, 223, 227),
+            "text_dark": (50, 50, 50),
+            "text_light": (255, 255, 255),
+            "accent": (52, 152, 219),
+            "accent_darker": (41, 128, 185),
+            "button_bg": (255, 255, 255),
+            "button_border": (210, 214, 218)
+        }
+        self.selected_level_button = None
+
+        super().__init__(parent, dims)
+
+        self.setBackgroundColors([self.style["bg"], self.style["bg"]])
+        self.setBorderColors([self.style["border"], self.style["border"]])
+        self.setBorderWidth(1)
+        self.setBorderRadius(16)
+        self.setPaddings([20])
+
+        for name in level_names:
+            self.add_level_button(name)
+
+    def allReallWidgets(self, layout):
+        result = []
+        for widget in layout.widgets:
+            if isinstance(widget, Layout):
+                result += self.allReallWidgets(widget)
+            else:
+                result += [widget]
+        return result
+
+    def setTransparentBackground(self, transparentBackground):
+        super().setTransparentBackground(transparentBackground)
+        for widget in self.allReallWidgets(self):
+            widget.setTransparentBackground(False)
+
+    def _create_new_page(self):
+        grid = GridLayoutV(self)
+        grid.setDims(*self.dims)
+        
+        # Применяем наш стиль к гриду
+        grid.setAllRows('setSpace', 10) # <-- УВЕЛИЧИВАЕМ РАССТОЯНИЕ МЕЖДУ КНОПКАМИ
+        grid.setAllRows('setPlacements', 'center', 'center')
+        grid.setAllRows('setBackgroundColors', [self.style["bg"]] * 2)
+        grid.setAllRows('setBorderWidth', 0)
+        
+        return grid
+
+    def add_level_button(self, level_name):
+        btn = TextButton(self, text=str(level_name))
+        
+        btn.setFont(None, None) 
+        
+        btn.setPaddings([10])
+        btn.setBorderRadius(12)
+        btn.setBorderWidth(1)
+        btn.setColors([self.style["text_dark"], "black"])
+        btn.setBackgroundColors(["black", (240, 240, 0)])
+        btn.setBorderColors([self.style["button_border"], self.style["accent_darker"]])
+
+        btn.onClick = lambda b=btn: self.on_level_select(b)
+
+        self.addWidget(btn)
+
+    def addWidget(self, widget):
+        if self.current_grid is None or self.current_grid.isFull():
+            self.current_grid = self._create_new_page()
+            super(StackedGridLayout, self).addWidget(
+                self.current_grid, 
+                space=15, 
+                arrowColors=[self.style["button_bg"], self.style["button_border"]]
+            )
+        self.current_grid.appendWidgetFree(widget)
+
+    def render(self, surf):
+        super().render(surf)
+
+
+# ======================================================================
+# ПРИМЕР ИСПОЛЬЗОВАНИЯ
+# Замените ваш `if __name__ == "__main__":` на этот код, чтобы увидеть результат
+# ======================================================================
+# ======================================================================
+# ПРИМЕР ИСПОЛЬЗОВАНИЯ (Версия 2.0)
+# Замените ваш `if __name__ == "__main__":` на этот код
+# ======================================================================
+if __name__ == "__main__":
+    pygame.init()
+    screen = pygame.display.set_mode((1000, 750))
+    pygame.display.set_caption("Красивый выбор уровня v2.0")
+
+    main_layout = VerticalLayout(None)
+    main_layout.rect = screen.get_rect()
+    main_layout.innerRect = main_layout.rect
+    main_layout.setBackgroundColors([(45, 52, 54)]*2)
+    main_layout.setBorderWidth(0)
+    main_layout.setSpace(10)
+    main_layout.setPlacementy('center')
+
+    title_label = TextButton(main_layout, "Выберите уровень")
+    title_label.setHeight(80)
+    title_label.setFixedSizes([False, True])
+    title_label.setFont(None, 60)
+    title_label.setColors([(255, 255, 255), (255, 255, 255)])
+    title_label.setClickable(False)
+    title_label.setBackgroundColors([(45, 52, 54)]*2) 
+    title_label.setBorderWidth(0)
+    
+    # --- ГЛАВНЫЕ ИЗМЕНЕНИЯ ЗДЕСЬ ---
+    # 1. Создаем список с названиями наших уровней
+    my_level_list = [
+        "1", "2", "3", "4", "5", "Лес", "Пещеры", "Замок",
+        "Подземелье", "10", "11", "Снега", "Пустыня", "14",
+        "Болото", "Финальный босс"
+    ]
+
+    # 2. Задаем сетку (например, 2 строки по 4 уровня на странице)
+    DIMS = (2, 4)
+    
+    # 3. Создаем виджет, передавая ему наш список уровней
+    my_levels_widget = MyLevels(main_layout, dims=DIMS, level_names=my_level_list)
+
+    # my_levels_widget.setSize(800, 450) # Сделаем виджет чуть побольше
+    # my_levels_widget.setFixedSizes([True, True])
+
+    main_layout.addWidget(title_label)
+    main_layout.addWidget(my_levels_widget)
+
+    main_layout.dispose()
     
     state = State()
     clock = pygame.time.Clock()
-    events = []
     running = True
     while running:
         events = pygame.event.get()
@@ -981,10 +1143,10 @@ if __name__ == "__main__":
                 running = False
 
         state.update(events)
-        msg_box.update(state)
+        main_layout.update(state)
         
-        screen.fill(DARK_GRAY) # Фон для контраста
-        msg_box.render(screen)
+        screen.fill((45, 52, 54))
+        main_layout.render(screen)
         
         pygame.display.flip()
         clock.tick(60)
