@@ -54,7 +54,6 @@ class Editor:
                         tile['variant'] = Editor.TRANSFORM_RULES[suit_situation]
                     
     def __init__(self, level, level_config=None):
-        level = level
         self.level = level
         self.base_tile_size = 16
         self.tile_size = 16

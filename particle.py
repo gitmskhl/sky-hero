@@ -2,9 +2,17 @@ from scripts.utils import load_images
 from random import randint
 
 class Particle:
-    images = load_images('particles/particle/', 1.5, (0, 0, 0))
     
+    loaded = False
+
+    def init_images():
+        Particle.images = load_images('particles/particle/', 1.5, (0, 0, 0))
+        Particle.loaded = True
+
     def __init__(self, pos, vel):
+        if not Particle.loaded:
+            Particle.init_images()
+        
         self.pos = list(pos)
         self.vel = list(vel)
         self.current_frame = 0
@@ -37,8 +45,7 @@ class Particles:
     def update(self):
         for p in self.particles:
             p.update()
-            if p.dead:
-                self.particles.remove(p)
-    
+        self.particles = [p for p in self.particles if not p.dead]
+        
     def add(self, pos, vel):
         self.particles.append(Particle(pos, vel))

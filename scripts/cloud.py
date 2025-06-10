@@ -3,11 +3,17 @@ from scripts.utils import load_images, load_image
 from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK
 
 class Cloud:
-    img = load_image('images/clouds/cloud_1.png', 1)
-    images = load_images('images/clouds', SCREEN_WIDTH / (img.get_width() * 10), BLACK)
-    free_zone = SCREEN_WIDTH // 20
+    loaded = False
+
+    def init_images():
+        Cloud.img = load_image('images/clouds/cloud_1.png', 1)
+        Cloud.images = load_images('images/clouds', SCREEN_WIDTH / (Cloud.img.get_width() * 10), BLACK)
+        Cloud.free_zone = SCREEN_WIDTH // 20
+        Cloud.loaded = True
     
     def __init__(self):
+        if not Cloud.loaded:
+            Cloud.init_images()
         self.image = choice(Cloud.images)    
         self.x = randint(-Cloud.free_zone, SCREEN_WIDTH + Cloud.free_zone)
         self.y = randint(-Cloud.free_zone, SCREEN_HEIGHT + Cloud.free_zone)

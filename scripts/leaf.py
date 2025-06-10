@@ -4,8 +4,16 @@ from random import randint
 from math import sin
 
 class Leaf:
-    images = load_images('particles/leaf', scale=2, colorkey=BLACK)
+    
+    loaded = False
+
+    def init_images():
+        Leaf.images = load_images('particles/leaf', scale=2, colorkey=BLACK)
+        Leaf.loaded = True
+
     def __init__(self, x_tree, y_tree, w_tree, h_tree, period=20):
+        if not Leaf.loaded:
+            Leaf.init_images()
         self.current = 0
         self.vy = .2
         self.t = 0
@@ -43,7 +51,7 @@ class Leaves:
         self.border = y_tree + h_tree
     
     def update(self):
-        for l in self.leaves: 
+        for l in self.leaves.copy():
             l.update()
             if l.y > self.border:
                 self.leaves.remove(l)

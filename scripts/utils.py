@@ -2,7 +2,7 @@ import pygame
 import os
 
 def load_image(path, scale, colorkey=None, size=None):
-    image = pygame.image.load(path)
+    image = pygame.image.load(path).convert_alpha()
     w, h = image.get_width(), image.get_height()
     w, h = int(w * scale), int(h * scale)
     if size:

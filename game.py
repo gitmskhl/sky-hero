@@ -34,6 +34,8 @@ from tour import Tour_1, Tour_2, Tour_3, Tour_4, Tour_5
 from random import random
 from math import pi, cos, sin
 
+pygame.init()
+
 STATE = 'menu'
 
 if __name__ != "__main__":
@@ -48,7 +50,6 @@ level_config = None
 
 keyboard.init_keyboard()
 
-pygame.init()
 class App:
     def __init__(self, level_config=None):
         gc.collect()
