@@ -13,12 +13,21 @@ from scripts.enemy import Enemy
 from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT
 from scripts.utils import load_image
 from scripts.spark import Spark
-from scripts.menu import MainMenu, SelectLevelMenu, StartMenu, SettingsMenu, AdvancedSettingsMenu, MyLevelsMenu
+from scripts.menu import (
+    MainMenu,
+    SelectLevelMenu,
+    StartMenu,
+    SettingsMenu,
+    AdvancedSettingsMenu,
+    MyLevelsMenu,
+    KeyBindingsMenu
+)
 from scripts.widgets import Pages
 from scripts import widgets
 from scripts.combo import Combo
 from scripts.custom_map_creator import run
-from scripts.keyboard import KEY_BINDINGS, init_keyboard
+from scripts import keyboard
+
 
 from tour import Tour_1, Tour_2, Tour_3, Tour_4, Tour_5
 
@@ -37,7 +46,7 @@ achieved_level = 1
 level = 1
 level_config = None
 
-init_keyboard()
+keyboard.init_keyboard()
 
 pygame.init()
 class App:
@@ -112,6 +121,7 @@ class App:
             mmenu = MainMenu(self, self.main_menu, size)
             select_level_menu = SelectLevelMenu(self, self.main_menu, size)
             self.my_levels_menu = MyLevelsMenu(self, self.main_menu, size)
+            key_bindings_menu = KeyBindingsMenu(self.main_menu, size)
 
             pygame.mixer.music.load('sfx/music.wav')
             pygame.mixer.music.set_volume(0.5)
@@ -124,7 +134,7 @@ class App:
             }
             
             self.play_menu.addLayouts([start_menu, settings_menu, advanced_settings_menu])
-            self.main_menu.addLayouts([mmenu, select_level_menu, self.my_levels_menu])
+            self.main_menu.addLayouts([mmenu, select_level_menu, self.my_levels_menu, key_bindings_menu])
             # enemy icon
             enemy_img = self.map.resources['spawners'][1]
             self.small_enemy_img = pygame.transform.scale(enemy_img, (enemy_img.get_width() / 1.5, enemy_img.get_height() / 1.5))
@@ -236,14 +246,16 @@ class App:
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
             for event in pygame.event.get():
+                if isinstance(self.main_menu.current_layout, KeyBindingsMenu):
+                    self.main_menu.current_layout.handle_event(event)
                 if event.type == pygame.KEYDOWN:
-                    if not isinstance(self.main_menu.current_layout, ButtonsMenu): continue
-                    if event.key == KEY_BINDINGS['up']:
-                        self.main_menu.selectedUp()
-                    elif event.key == KEY_BINDINGS['down']:
-                        self.main_menu.selectedDown()
-                    elif event.key == pygame.K_RETURN:
-                        self.main_menu.enterPressed()
+                    if isinstance(self.main_menu.current_layout, ButtonsMenu):
+                        if event.key == keyboard.KEY_BINDINGS['up']:
+                            self.main_menu.selectedUp()
+                        elif event.key == keyboard.KEY_BINDINGS['down']:
+                            self.main_menu.selectedDown()
+                        elif event.key == pygame.K_RETURN:
+                            self.main_menu.enterPressed()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.main_menu.update(mouse_pos, True)
             pygame.display.update()
@@ -269,9 +281,9 @@ class App:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if not isinstance(self.play_menu.current_layout, ButtonsMenu): continue
-                    if event.key == KEY_BINDINGS['up']:
+                    if event.key == keyboard.KEY_BINDINGS['up']:
                         self.play_menu.selectedUp()
-                    elif event.key == KEY_BINDINGS['down']:
+                    elif event.key == keyboard.KEY_BINDINGS['down']:
                         self.play_menu.selectedDown()
                     elif event.key == pygame.K_RETURN:
                         self.play_menu.enterPressed()
@@ -399,26 +411,26 @@ class App:
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
-                    if event.key == KEY_BINDINGS['left']:
+                    if event.key == keyboard.KEY_BINDINGS['left']:
                         self.main_player.move[0] = True
                         self.main_player.move[1] = False
                         self.main_player.flip = True
-                    elif event.key == KEY_BINDINGS['right']:
+                    elif event.key == keyboard.KEY_BINDINGS['right']:
                         self.main_player.move[1] = True
                         self.main_player.move[0] = False
                         self.main_player.flip = False
                     elif event.key == pygame.K_ESCAPE:
                         # self.running = False
                         self.play_menu_run()
-                    elif event.key == KEY_BINDINGS['jump']:
+                    elif event.key == keyboard.KEY_BINDINGS['jump']:
                         self.main_player.jump()
-                    elif event.key == KEY_BINDINGS['attack']:
+                    elif event.key == keyboard.KEY_BINDINGS['attack']:
                         self.main_player.dash()
 
                 elif event.type == pygame.KEYUP:
-                    if event.key == KEY_BINDINGS['left']:
+                    if event.key == keyboard.KEY_BINDINGS['left']:
                         self.main_player.move[0] = False
-                    elif event.key == KEY_BINDINGS['right']:
+                    elif event.key == keyboard.KEY_BINDINGS['right']:
                         self.main_player.move[1] = False
 
             if self.transition:

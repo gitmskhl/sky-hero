@@ -5,6 +5,7 @@ import shelve
 
 from .custom_map_widget import MyLevels
 from .widgets import New2LastBroker
+from . import keyboard
 
 if __name__ == "__main__":
     from widgets import *
@@ -156,9 +157,10 @@ class AdvancedSettingsMenu(Menu):
 
 class MainMenu(ButtonsMenu):
     # 0 - this menu
-    # 1 - settings
-    # 2 - advanced settings
-    # 3 - select level
+    # 1 - create level
+    # 2 - select level
+    # 3 - control (key bindings)
+    # 4 - exit
     def __init__(self, app, pages: Pages, size):
         super().__init__(pages, size, paddings=[50, size[0] // 4, 50, size[0] // 4], space=10)
         self.app = app
@@ -171,6 +173,10 @@ class MainMenu(ButtonsMenu):
         # select level button
         self.select_level_button = Button(self.root, text='Levels', border_radius=br)
         self.select_level_button.connect(lambda: pages.setPage(1))
+        
+        # key bindings button
+        self.key_bindings_button = Button(self.root, text='Control', border_radius=br)
+        self.key_bindings_button.connect(lambda: pages.setPage(3))
 
         # exit button
         self.exit_button = Button(self.root, text='Exit', border_radius=br)
@@ -179,6 +185,7 @@ class MainMenu(ButtonsMenu):
         self.addWidget(self.play_button)
         self.addWidget(self.create_level_button)
         self.addWidget(self.select_level_button)
+        self.addWidget(self.key_bindings_button)
         self.addWidget(self.exit_button)
     
     def stop_main_menu(self):
@@ -282,6 +289,47 @@ class MyLevelsMenu(Menu):
         self.widgets[0] = self.broker
         self.dispose()
 
+
+class KeyBindingsMenu(Menu):
+    def __init__(self, pages, size):
+        super().__init__(pages, size, paddings=[50, size[0] // 6, 50, size[0] // 6], space=20)
+        root = self.root
+        br = 40
+
+        actions = [
+            ('left', 'Move left'),
+            ('right', 'Move right'),
+            ('jump', 'Jump'),
+            ('attack', 'Dash/attack'),
+            ('up', 'Menu up'),
+            ('down', 'Menu down'),
+        ]
+        self.buttons = {}
+        self.wait_action = None
+        for act, label_text in actions:
+            hl = HorizontalLayout(root, paddings=[0]*4, space=20, fixedSizes=(False, True), h=50)
+            lbl = Label(hl, label_text, color="orange", positions=['left', 'center'], fontsize=40)
+            btn = Button(hl, text=pygame.key.name(keyboard.KEY_BINDINGS[act]).upper(), border_radius=br, fixedSizes=(False, True), h=50)
+            btn.connect(lambda a=act: self._ask_key(a))
+            hl.addWidget(lbl)
+            hl.addWidget(btn)
+            self.buttons[act] = btn
+            self.addWidget(hl)
+
+        self.back_button = Button(root, text='Back', border_radius=br)
+        self.back_button.connect(lambda: pages.setPage(0))
+        self.addWidget(self.back_button)
+
+    def _ask_key(self, act):
+        self.wait_action = act
+        self.buttons[act].text = 'Press key...'
+
+    def handle_event(self, event):
+        if self.wait_action and event.type == pygame.KEYDOWN:
+            keyboard.KEY_BINDINGS[self.wait_action] = event.key
+            self.buttons[self.wait_action].text = pygame.key.name(event.key).upper()
+            keyboard.save_key_bindings()
+            self.wait_action = None
 
 
 if __name__ == "__main__":
