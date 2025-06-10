@@ -18,6 +18,7 @@ from scripts.widgets import Pages
 from scripts import widgets
 from scripts.combo import Combo
 from scripts.custom_map_creator import run
+from scripts.keyboard import KEY_BINDINGS, init_keyboard
 
 from tour import Tour_1, Tour_2, Tour_3, Tour_4, Tour_5
 
@@ -35,6 +36,8 @@ clock = pygame.time.Clock()
 achieved_level = 1
 level = 1
 level_config = None
+
+init_keyboard()
 
 pygame.init()
 class App:
@@ -235,9 +238,9 @@ class App:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if not isinstance(self.main_menu.current_layout, ButtonsMenu): continue
-                    if event.key == pygame.K_UP:
+                    if event.key == KEY_BINDINGS['up']:
                         self.main_menu.selectedUp()
-                    elif event.key == pygame.K_DOWN:
+                    elif event.key == KEY_BINDINGS['down']:
                         self.main_menu.selectedDown()
                     elif event.key == pygame.K_RETURN:
                         self.main_menu.enterPressed()
@@ -266,9 +269,9 @@ class App:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if not isinstance(self.play_menu.current_layout, ButtonsMenu): continue
-                    if event.key == pygame.K_UP:
+                    if event.key == KEY_BINDINGS['up']:
                         self.play_menu.selectedUp()
-                    elif event.key == pygame.K_DOWN:
+                    elif event.key == KEY_BINDINGS['down']:
                         self.play_menu.selectedDown()
                     elif event.key == pygame.K_RETURN:
                         self.play_menu.enterPressed()
@@ -396,26 +399,26 @@ class App:
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
+                    if event.key == KEY_BINDINGS['left']:
                         self.main_player.move[0] = True
                         self.main_player.move[1] = False
                         self.main_player.flip = True
-                    elif event.key == pygame.K_RIGHT:
+                    elif event.key == KEY_BINDINGS['right']:
                         self.main_player.move[1] = True
                         self.main_player.move[0] = False
                         self.main_player.flip = False
                     elif event.key == pygame.K_ESCAPE:
                         # self.running = False
                         self.play_menu_run()
-                    elif event.key == pygame.K_SPACE:
+                    elif event.key == KEY_BINDINGS['jump']:
                         self.main_player.jump()
-                    elif event.key == pygame.K_x:
+                    elif event.key == KEY_BINDINGS['attack']:
                         self.main_player.dash()
 
                 elif event.type == pygame.KEYUP:
-                    if event.key == pygame.K_LEFT:
+                    if event.key == KEY_BINDINGS['left']:
                         self.main_player.move[0] = False
-                    elif event.key == pygame.K_RIGHT:
+                    elif event.key == KEY_BINDINGS['right']:
                         self.main_player.move[1] = False
 
             if self.transition:

@@ -1,8 +1,11 @@
 import pygame
-from scripts.widgets import *
 from random import random
 from math import cos, sin, pi
+
+from scripts.widgets import *
 from scripts.spark import Spark
+from scripts.keyboard import KEY_BINDINGS
+
 pygame.init()
 
 BLACK = (0, 0, 0)
@@ -154,34 +157,34 @@ class Tour:
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT and self.step >= self.move_step:
+                    if event.key == KEY_BINDINGS['left'] and self.step >= self.move_step:
                         self.app.main_player.move[0] = True
                         self.app.main_player.move[1] = False
                         self.app.main_player.flip = True
                         if self.step == self.move_step and self.first_move:
                             self.current_widget.finished = True
-                    elif event.key == pygame.K_RIGHT and self.step >= self.move_step:
+                    elif event.key == KEY_BINDINGS['right'] and self.step >= self.move_step:
                         self.app.main_player.move[1] = True
                         self.app.main_player.move[0] = False
                         self.app.main_player.flip = False
                         if self.step == self.move_step and self.first_move:
                             self.current_widget.finished = True
-                    elif event.key == pygame.K_SPACE and self.step >= self.jump_step:
+                    elif event.key == KEY_BINDINGS['jump'] and self.step >= self.jump_step:
                         self.app.main_player.jump()
                         if self.step == self.jump_step and self.first_jump:
                             self.current_widget.finished = True
                     elif event.key == pygame.K_ESCAPE and self.step >= self.menu_step:
                         self.app.play_menu_run()
-                    elif event.key == pygame.K_x and self.step >= self.attack_step:
+                    elif event.key == KEY_BINDINGS['attack'] and self.step >= self.attack_step:
                         self.app.main_player.dash()
                         if self.step == self.attack_step and self.first_attack:
                             if not self.kill_enemies or len(self.app.enemies) == 0:
                                 self.current_widget.finished = True
 
                 elif event.type == pygame.KEYUP:
-                    if event.key == pygame.K_LEFT and self.step >= self.move_step:
+                    if event.key == KEY_BINDINGS['left'] and self.step >= self.move_step:
                         self.app.main_player.move[0] = False
-                    elif event.key == pygame.K_RIGHT and self.step >= self.move_step:
+                    elif event.key == KEY_BINDINGS['right'] and self.step >= self.move_step:
                         self.app.main_player.move[1] = False
 
             if self.transition or (self.step - 2 == len(self.layouts)):
