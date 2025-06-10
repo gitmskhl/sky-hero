@@ -48,7 +48,7 @@ class AnimationManager:
             self.animations[animation_name] = (
                 AnimationDir(dirpath + animation_name, scale, period, repeat, colorkey)
             )
-        self.current = current if current else self.animations.keys()[0]
+        self.current = current if current else list(self.animations.keys())[0]
     
     def update(self):
         self.animations[self.current].update()
