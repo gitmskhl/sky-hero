@@ -76,7 +76,7 @@ class Player:
 
 
     def update(self):
-        if self.vel[1] > 0:
+        if self.vel[1] > 0 and not self.wall_slide:
             self.time_falling += 1
         else:
             self.time_falling = 0
