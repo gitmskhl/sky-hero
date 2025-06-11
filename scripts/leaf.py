@@ -53,8 +53,7 @@ class Leaves:
     def update(self):
         for l in self.leaves.copy():
             l.update()
-            if l.y > self.border:
-                self.leaves.remove(l)
+        self.leaves = [l for l in self.leaves if l.y <= self.border]
         if randint(1, 60) == 1:
             self.leaves.append(Leaf(self.x_tree, self.y_tree, self.w_tree, self.h_tree, self.period))
         

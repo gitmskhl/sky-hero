@@ -13,7 +13,7 @@ BLACK = (0, 0, 0)
 class Tour:
     inf = 100
     def __init__(self, app, screen):
-        # app.__init__()
+        app.__init__()
         self.app = app
         self.screen = screen
         self.SCREEN_WIDTH = self.screen.get_width()
