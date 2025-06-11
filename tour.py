@@ -18,6 +18,18 @@ class Tour:
         self.screen = screen
         self.SCREEN_WIDTH = self.screen.get_width()
         self.SCREEN_HEIGHT = self.screen.get_height()
+
+        # keys
+        self.key_names = {
+            action: pygame.key.name(key_code)
+            for action, key_code in keyboard.KEY_BINDINGS.items()
+        }
+        if self.key_names['left'] == 'left':
+            self.key_names['left'] = '<--'
+        if self.key_names['right'] == 'right':
+            self.key_names['right'] = '-->'
+
+
         self.step = 1
         self.transition = -30
         self.timer = 0 # time for the current layout
@@ -235,7 +247,14 @@ class Tour_1(Tour):
         # layout 2
         self.layout_2 = VerticalLayout(None, paddings=[0] * 4, space=0)
         self.layout_2.setSize(self.screen.get_width(), self.screen.get_height())
-        self.widget_2 = BlinkingLabel(self.layout_2, "Press the <-- and --> keys".replace(' ', '  '), positions=['center', 'top'], font=self.font, color=BLACK, blinktime=40)
+        self.widget_2 = BlinkingLabel(
+            self.layout_2,
+            ("Press the %s and %s keys" % (self.key_names['left'], self.key_names['right'])).replace(' ', '  '),
+            positions=['center', 'top'],
+            font=self.font,
+            color=BLACK,
+            blinktime=40
+        )
         self.widget_2.finished = False
         self.layout_2.addWidget(self.widget_2)
         self.layout_2.dispose()
@@ -252,7 +271,7 @@ class Tour_1(Tour):
         self.layout_4 = VerticalLayout(None, paddings=[0] * 4, space=0)
         self.layout_4.setSize(self.screen.get_width(), self.screen.get_height())
         texts = [
-            "Press the space key to jump",
+            "Press the %s key to jump" % self.key_names['jump'],
         ]
         texts = [text.replace(' ', '  ') for text in texts]
         self.widget_4 = GradualStoryWidget(self.layout_4, texts, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT), paddings=[0, 20, 0, 20], positions=['left', 'top'], fontsize=58, deltatime=DELTA_TIME, delay=120)
@@ -262,7 +281,14 @@ class Tour_1(Tour):
         # layout 5
         self.layout_5 = VerticalLayout(None, paddings=[0] * 4, space=0)
         self.layout_5.setSize(self.screen.get_width(), self.screen.get_height())
-        self.widget_5 = BlinkingLabel(self.layout_5, "Press SPACE".replace(' ', '  '), positions=['center', 'top'], font=self.font, color=BLACK, blinktime=40)
+        self.widget_5 = BlinkingLabel(
+            self.layout_5,
+            ("Press %s" % self.key_names['jump'].upper()).replace(' ', '  '),
+            positions=['center', 'top'],
+            font=self.font,
+            color=BLACK,
+            blinktime=40
+        )
         self.widget_5.finished = False
         self.layout_5.addWidget(self.widget_5)
         self.layout_5.dispose()
@@ -285,7 +311,7 @@ class Tour_2(Tour):
         self.layout_1 = VerticalLayout(None, paddings=[0] * 4, space=0)
         self.layout_1.setSize(self.screen.get_width(), self.screen.get_height())
         texts = [
-            'Jump to the wall and press \nspace to bounce off it',
+            'Jump to the wall and press \n%s to bounce off it' % self.key_names['jump'],
         ]
         texts = [text.replace(' ', '  ') for text in texts]
         self.widget_1 = GradualStoryWidget(self.layout_1, texts, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT), paddings=[0, 20, 0, 20], positions=['left', 'top'], fontsize=58, font=self.font, deltatime=DELTA_TIME, delay=120)
@@ -334,7 +360,7 @@ class Tour_3(Tour):
         self.layout_1.setSize(self.screen.get_width(), self.screen.get_height())
         texts = [
             'There are enemies in the game. They can shoot',
-            'You can attack them by\n pressing the X key',
+            'You can attack them by\n pressing the \'%s\' key' % self.key_names['attack'],
         ]
         texts = [text.replace(' ', '  ') for text in texts]
         self.widget_1 = GradualStoryWidget(self.layout_1, texts, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT), paddings=[0, 20, 0, 20], positions=['left', 'top'], fontsize=58, font=self.font, deltatime=DELTA_TIME, delay=120)
