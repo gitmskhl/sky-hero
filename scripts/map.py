@@ -2,7 +2,7 @@ import pygame
 import json
 from .editor import Editor 
 from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK
-from scripts.utils import load_image
+from scripts.resource_manager import load_image
 from .cloud import Clouds
 from .leaf import Leaves
 from particle import Particles

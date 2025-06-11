@@ -1,6 +1,6 @@
 
 import pygame
-import scripts.utils as utils
+from . import resource_manager as rmanager
 import os
 
 class Animation:
@@ -38,7 +38,7 @@ class Animation:
 
 class AnimationDir(Animation):
     def __init__(self, dirpath, scale, period, repeat=False, colorkey=None):
-        super().__init__(utils.load_images(dirpath, scale, colorkey), period, repeat)
+        super().__init__(rmanager.load_images(dirpath, scale, colorkey), period, repeat)
 
 
 class AnimationManager: 

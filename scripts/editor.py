@@ -13,7 +13,7 @@ if __name__ == "__main__":
     SCREEN_WIDTH = 800
     SCREEN_HEIGHT = 600
 else:
-    from . import utils
+    from . import resource_manager as rmanager
 
 # 16 x 16 is the base
 class Editor:
@@ -83,13 +83,13 @@ class Editor:
 
     def _resize_resources(self):
         for dirname in os.listdir('resources'):
-            self.resources[dirname] = utils.load_images('resources/' + dirname, self.tile_size / 16, (0, 0, 0))
+            self.resources[dirname] = rmanager.load_images('resources/' + dirname, self.tile_size / 16, (0, 0, 0))
 
     def _load_resources(self):
         self.resources = {}
         self.resource_props = {}
         for dirname in os.listdir('resources'):
-            self.resources[dirname] = utils.load_images('resources/' + dirname, 1, (0, 0, 0))
+            self.resources[dirname] = rmanager.load_images('resources/' + dirname, 1, (0, 0, 0))
             res_count = len(self.resources[dirname])
             info_path = os.path.join('resources', dirname, 'info.txt')
             self.resource_props[dirname] = {}

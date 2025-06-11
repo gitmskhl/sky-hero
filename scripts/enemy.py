@@ -3,7 +3,7 @@ from random import random, randint
 from scripts.player import Player
 from scripts.map import Map
 from scripts.physics import GRAVITY
-from scripts.utils import load_image
+from scripts.resource_manager import load_image
 from scripts.spark import Spark
 from math import pi, cos, sin
 

@@ -5,7 +5,7 @@ import shelve
 from collections import deque
 import copy
 
-from . import utils
+from . import resource_manager as rmanager
 from .custom_map_widget import (
     ResourcePanel,
     State,
@@ -115,13 +115,13 @@ class Editor:
     def _resize_resources(self):
         dirpath = os.path.join(RESOURCES_DIR)
         for dirname in os.listdir(dirpath):
-            self.resources[dirname] = utils.load_images(os.path.join(dirpath, dirname), self.tile_size / self.base_tile_size, (0, 0, 0))
+            self.resources[dirname] = rmanager.load_images(os.path.join(dirpath, dirname), self.tile_size / self.base_tile_size, (0, 0, 0))
 
     def _load_resources(self):
         self.resources = {}
         self.resource_props = {}
         for dirname in os.listdir(RESOURCES_DIR):
-            self.resources[dirname] = utils.load_images(os.path.join(RESOURCES_DIR, dirname), 1, (0, 0, 0))
+            self.resources[dirname] = rmanager.load_images(os.path.join(RESOURCES_DIR, dirname), 1, (0, 0, 0))
             res_count = len(self.resources[dirname])
             info_path = os.path.join(RESOURCES_DIR, dirname, 'info.txt')
             self.resource_props[dirname] = {}

@@ -1,4 +1,4 @@
-from scripts.utils import load_images
+from scripts.resource_manager import load_images
 from random import randint
 
 class Particle:

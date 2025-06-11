@@ -1,6 +1,6 @@
 import pygame
 import shelve
-from scripts.utils import load_image
+from scripts.resource_manager import load_image
 
 pygame.init()
 

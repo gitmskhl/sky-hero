@@ -1,5 +1,5 @@
 from random import randint, choice
-from scripts.utils import load_images, load_image
+from scripts.resource_manager import load_images, load_image
 from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK
 
 class Cloud:

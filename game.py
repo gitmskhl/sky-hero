@@ -11,7 +11,6 @@ from scripts.map import Map
 from scripts.player import Player
 from scripts.enemy import Enemy 
 from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT
-from scripts.utils import load_image
 from scripts.spark import Spark
 from scripts.menu import (
     MainMenu,
@@ -27,6 +26,7 @@ from scripts import widgets
 from scripts.combo import Combo
 from scripts.custom_map_creator import run
 from scripts import keyboard
+from scripts.resource_manager import load_image
 
 
 from tour import Tour_1, Tour_2, Tour_3, Tour_4, Tour_5
