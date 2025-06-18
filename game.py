@@ -31,6 +31,7 @@ from scripts.utils import resource_path, save_path
 
 
 from tour import Tour_1, Tour_2, Tour_3, Tour_4, Tour_5
+from final import Credits, count_levels
 
 from random import random
 from math import pi, cos, sin
@@ -48,6 +49,9 @@ clock = pygame.time.Clock()
 achieved_level = 1
 level = 1
 level_config = None
+
+TOTAL_LEVELS = count_levels()
+
 
 keyboard.init_keyboard()
 
@@ -78,6 +82,7 @@ class App:
                 'hit': pygame.mixer.Sound(resource_path('sfx/hit.wav')),
                 'shoot': pygame.mixer.Sound(resource_path('sfx/shoot.wav')),
                 'ambience': pygame.mixer.Sound(resource_path('sfx/ambience.wav')),
+                'final': pygame.mixer.Sound(resource_path("sfx/final.mp3"))
             }
 
             self.sfx['ambience'].set_volume(.2)
@@ -85,6 +90,7 @@ class App:
             self.sfx['hit'].set_volume(.8)
             self.sfx['shoot'].set_volume(.4)
             self.sfx['jump'].set_volume(.7)
+            self.sfx['final'].set_volume(.5)
 
         # menu
         size = (SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -329,6 +335,16 @@ class App:
                             self.go_to_main_menu()
                         else:
                             level += 1
+                            if level > TOTAL_LEVELS:
+                                pygame.mixer.music.stop()
+                                for sfx in self.sfx.values():
+                                    sfx.stop()
+                                self.sfx['final'].play()
+                                Credits().run(screen)
+                                save()
+                                level = TOTAL_LEVELS
+                                self.go_to_main_menu()
+                                return
                             save()
                             self.__init__()
             
@@ -428,6 +444,8 @@ class App:
                         self.main_player.jump()
                     elif event.key == keyboard.KEY_BINDINGS['attack']:
                         self.main_player.dash()
+                    elif event.key == pygame.K_r:
+                        self.enemies = []
 
                 elif event.type == pygame.KEYUP:
                     if event.key == keyboard.KEY_BINDINGS['left']:
@@ -484,6 +502,7 @@ def load():
     else:
         with open(save_path('.info'), 'rb') as f:
             level = pickle.load(f)
+            level = min(level, TOTAL_LEVELS)
     print('loading: level = %d' % level)
 
 load()

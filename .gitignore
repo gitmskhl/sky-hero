@@ -3,3 +3,4 @@
 *.sh
 .info
 .levels
+build/
