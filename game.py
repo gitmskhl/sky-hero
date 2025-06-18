@@ -27,6 +27,7 @@ from scripts.combo import Combo
 from scripts.custom_map_creator import run
 from scripts import keyboard
 from scripts.resource_manager import load_image
+from scripts.utils import resource_path, save_path
 
 
 from tour import Tour_1, Tour_2, Tour_3, Tour_4, Tour_5
@@ -72,11 +73,11 @@ class App:
         if 'main_menu' not in self.__dict__:
 
             self.sfx = {
-                'jump': pygame.mixer.Sound('sfx/jump.wav'),
-                'dash': pygame.mixer.Sound('sfx/dash.wav'),
-                'hit': pygame.mixer.Sound('sfx/hit.wav'),
-                'shoot': pygame.mixer.Sound('sfx/shoot.wav'),
-                'ambience': pygame.mixer.Sound('sfx/ambience.wav'),
+                'jump': pygame.mixer.Sound(resource_path('sfx/jump.wav')),
+                'dash': pygame.mixer.Sound(resource_path('sfx/dash.wav')),
+                'hit': pygame.mixer.Sound(resource_path('sfx/hit.wav')),
+                'shoot': pygame.mixer.Sound(resource_path('sfx/shoot.wav')),
+                'ambience': pygame.mixer.Sound(resource_path('sfx/ambience.wav')),
             }
 
             self.sfx['ambience'].set_volume(.2)
@@ -124,7 +125,7 @@ class App:
             self.my_levels_menu = MyLevelsMenu(self, self.main_menu, size)
             key_bindings_menu = KeyBindingsMenu(self.main_menu, size)
 
-            pygame.mixer.music.load('sfx/music.wav')
+            pygame.mixer.music.load(resource_path('sfx/music.wav'))
             pygame.mixer.music.set_volume(0.5)
             self.sfx_sliders = {
                 'ambience': advanced_settings_menu.ambience_slider,
@@ -149,7 +150,7 @@ class App:
         self.my_levels_menu.refresh_levels()
 
     def delete_level(self, level_name):
-        with shelve.open('.levels') as shelf:
+        with shelve.open(save_path('.levels')) as shelf:
             del shelf[level_name]
         self.my_levels_menu.refresh_levels()
 
@@ -472,16 +473,16 @@ def save():
     global level, achieved_level
     if level < achieved_level: return
     print('saving: level = %d' % level)
-    with open('.info', 'wb') as f:
+    with open(save_path('.info'), 'wb') as f:
         pickle.dump(level, f)
     achieved_level = level
 
 def load():
     global level
-    if not os.path.exists('.info'):
+    if not os.path.exists(save_path('.info')):
         level = -1
     else:
-        with open('.info', 'rb') as f:
+        with open(save_path('.info'), 'rb') as f:
             level = pickle.load(f)
     print('loading: level = %d' % level)
 

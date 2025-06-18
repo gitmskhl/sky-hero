@@ -1,6 +1,8 @@
 import pygame
 import shelve
 
+from .utils import save_path
+
 pygame.init()
 
 KEY_BINDINGS = {
@@ -15,7 +17,7 @@ KEY_BINDINGS = {
 def init_keyboard():
     global KEY_BINDINGS
     try:
-        with shelve.open('key_bindings') as db:
+        with shelve.open(save_path('key_bindings')) as db:
             if 'key_bindings' in db:
                 KEY_BINDINGS = db['key_bindings']
     except Exception as e:
@@ -23,5 +25,5 @@ def init_keyboard():
 
 
 def save_key_bindings():
-    with shelve.open('key_bindings', 'c') as db:
+    with shelve.open(save_path('key_bindings'), 'c') as db:
         db['key_bindings'] = KEY_BINDINGS

@@ -1,11 +1,13 @@
 import pygame
 from time import time
 
+from .utils import resource_path
+
 class Combo:
     def __init__(self, text, font=None, color=None, size=None, pos=None, diftime=.5):
         self.text = text
         self.size= size if size else 70
-        self.font = font if font else pygame.font.Font('fonts/Chunk Five Print.otf', self.size)
+        self.font = font if font else pygame.font.Font(resource_path('fonts/Chunk Five Print.otf'), self.size)
         self.color = color if color else (255, 10, 10)
         self.diftime = diftime
         self.count = 0

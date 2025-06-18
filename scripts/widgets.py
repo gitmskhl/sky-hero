@@ -1,6 +1,7 @@
 import pygame
 
 from .custom_map_widget import State
+from .utils import resource_path
 
 pygame.init()
 
@@ -82,7 +83,7 @@ class Button(Widget):
         if fontsize == 'auto':
             fontsize = 60
             self.dynamic_fontsize = True
-        self.font = font if font else pygame.font.Font('fonts/Amatic-Bold.ttf', fontsize)
+        self.font = font if font else pygame.font.Font(resource_path('fonts/Amatic-Bold.ttf'), fontsize)
         
         self.colors = colors if colors else Button.defaultColors
         self.textColors = textColors if textColors else Button.defaultTextColors
@@ -135,7 +136,7 @@ class Button(Widget):
     def dispose(self):
         if self.dynamic_fontsize:
             fontsize = int(self.rect.height / 1.2)
-            self.font = pygame.font.Font('fonts/Amatic-Bold.ttf', fontsize)
+            self.font = pygame.font.Font(resource_path('fonts/Amatic-Bold.ttf'), fontsize)
 
 class FloatButton(FloatWidget):
     def __init__(self, root, text, w, h, dx=0, dy=0, positions=None, colors=None, textColors=None, fontsize='auto', font=None, border_radius=-1, fixedSizes=(False, False)):
@@ -529,7 +530,7 @@ class LineEdit(FloatWidget):
         self.border_radius = border_radius
         self.border_width = border_width
         self.fontsize = fontsize
-        self.font = font if font else pygame.font.Font('fonts/Amatic-Bold.ttf', 30)
+        self.font = font if font else pygame.font.Font(resource_path('fonts/Amatic-Bold.ttf'), 30)
         self.text = None
         self.placeholder = placeholder
         self.focused = False
@@ -586,7 +587,7 @@ class LineEdit(FloatWidget):
                             self.text += key
         if self.fontsize == 'auto':
             fontsize = int(self.rect.height / 1.2)
-            self.font = pygame.font.Font('fonts/Amatic-Bold.ttf', fontsize)
+            self.font = pygame.font.Font(resource_path('fonts/Amatic-Bold.ttf'), fontsize)
         self.color = self.colors[self.focused]
         self.text_color = self.textColors[self.focused]
 
@@ -594,7 +595,7 @@ class LineEdit(FloatWidget):
 class Label(FloatWidget):
     def __init__(self, root, text, dx=0, dy=0, positions=None, fontsize=50, font=None, color=BLACK, size=None, fixedSizes=(False, False)):
         self.rect = pygame.Rect(0, 0, 0, 0)
-        self.font = font if font else pygame.font.Font('fonts/Pacifico.ttf', fontsize)
+        self.font = font if font else pygame.font.Font(resource_path('fonts/Pacifico.ttf'), fontsize)
         self.rendered_text = self.font.render(text, True, color)
         size = size if size else self.rendered_text.get_size()
         super().__init__(root, pygame.Rect(dx, dy, *size), positions, fixedSizes)
@@ -687,7 +688,7 @@ class GradualStoryWidget(FloatWidget):
     def __init__(self, root, texts, size, dx=0, dy=0, paddings=[0] * 4, positions=['left', 'top'], fontsize=60, font=None, color=BLACK, deltatime=10, delay=60, line_space=None):
         self.rect = pygame.Rect(0, 0, 0, 0)
         super().__init__(root, pygame.Rect(dx, dy, *size), positions)
-        self.font = font if font else pygame.font.Font('fonts/Pacifico.ttf', fontsize)
+        self.font = font if font else pygame.font.Font(resource_path('fonts/Pacifico.ttf'), fontsize)
         self.fontsize = fontsize
         self.color = color
         self.timer = 0

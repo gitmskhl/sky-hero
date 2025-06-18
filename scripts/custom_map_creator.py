@@ -6,6 +6,7 @@ from collections import deque
 import copy
 
 from . import resource_manager as rmanager
+from .utils import resource_path, save_path
 from .custom_map_widget import (
     ResourcePanel,
     State,
@@ -125,8 +126,8 @@ class Editor:
             res_count = len(self.resources[dirname])
             info_path = os.path.join(RESOURCES_DIR, dirname, 'info.txt')
             self.resource_props[dirname] = {}
-            if os.path.exists(info_path):
-                with open(info_path, 'r') as f:
+            if os.path.exists(resource_path(info_path)):
+                with open(resource_path(info_path), 'r') as f:
                     for line in f:
                         lst = line.split(':')
                         prop = lst[0].strip()
@@ -467,7 +468,7 @@ class Editor:
 
     def save(self, filename='untitled'):
         path = os.path.join(MAP_DIR, MAP_FILE)
-        with shelve.open(path, 'c') as shelf:
+        with shelve.open(save_path(path), 'c') as shelf:
             q = 0
             for name in shelf:
                 if name == filename or (name.startswith(filename) and name[len(filename)] == '('):
@@ -492,7 +493,7 @@ class Editor:
     def load(self, filename):
         path = os.path.join(MAP_DIR, MAP_FILE)
         try:
-            with shelve.open(path, 'r') as shelf:
+            with shelve.open(resource_path(path), 'r') as shelf:
                 if filename not in shelf: return
                 data = shelf[filename]
                 self.tile_map = {tuple(map(int, [x.replace('(', '').replace(')', '') for x in k.split(',')])): v for k, v in data['tile_map'].items()}

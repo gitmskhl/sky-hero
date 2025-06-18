@@ -1,6 +1,7 @@
 import pygame
 import shelve
 from scripts.resource_manager import load_image
+from .utils import resource_path, save_path
 
 pygame.init()
 
@@ -1002,7 +1003,7 @@ class MyLevels(StackedGridLayout):
     """
     def __init__(self, parent, dims):
         try:
-            with shelve.open('.levels', 'r') as shelf:
+            with shelve.open(save_path('.levels'), 'r') as shelf:
                 filenames = [
                     filename
                     for filename, _ in sorted(
@@ -1078,7 +1079,7 @@ class MyLevels(StackedGridLayout):
         btn.setBackgroundColors(["black", (240, 240, 0)])
         btn.setBorderColors([self.style["button_border"], self.style["accent_darker"]])
 
-        with shelve.open(".levels", 'r') as shelf:
+        with shelve.open(save_path('.levels'), 'r') as shelf:
             level_config = shelf[level_name]
 
         btn.onClick = lambda config=level_config: self.parent.app.load_my_own_level(config)

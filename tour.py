@@ -5,6 +5,7 @@ from math import cos, sin, pi
 from scripts.widgets import *
 from scripts.spark import Spark
 from scripts import keyboard
+from scripts.utils import resource_path
 
 pygame.init()
 
@@ -41,7 +42,7 @@ class Tour:
 
         self.menu_step = 1
         self.enemy_step = 1
-        self.font = pygame.font.Font("fonts/Pacifico.ttf", 58)
+        self.font = pygame.font.Font(resource_path("fonts/Pacifico.ttf"), 58)
 
     def borders(self, time): pass
     def set_delta_time(self, step):
@@ -262,7 +263,7 @@ class Tour_1(Tour):
         # layout 3
         self.layout_3 = VerticalLayout(None, paddings=[0] * 4, space=0)
         self.layout_3.setSize(self.screen.get_width(), self.screen.get_height())
-        self.widget_3 = Label(self.layout_3, 'Good!'.replace(' ', '  '), positions=['center', 'top'], font=pygame.font.Font('fonts/Pacifico.ttf', 60), color=BLACK)
+        self.widget_3 = Label(self.layout_3, 'Good!'.replace(' ', '  '), positions=['center', 'top'], font=pygame.font.Font(resource_path('fonts/Pacifico.ttf'), 60), color=BLACK)
         self.widget_3.finished = True
         self.layout_3.addWidget(self.widget_3)
         self.layout_3.dispose()
@@ -329,7 +330,7 @@ class Tour_2(Tour):
         # layout 3
         self.layout_3 = VerticalLayout(None, paddings=[0] * 4, space=0)
         self.layout_3.setSize(self.screen.get_width(), self.screen.get_height())
-        self.widget_3 = Label(self.layout_3, 'You\'re the best!'.replace(' ', '  '), positions=['center', 'top'], font=pygame.font.Font('fonts/Pacifico.ttf', 60), color=BLACK)
+        self.widget_3 = Label(self.layout_3, 'You\'re the best!'.replace(' ', '  '), positions=['center', 'top'], font=pygame.font.Font(resource_path('fonts/Pacifico.ttf'), 60), color=BLACK)
         self.widget_3.finished = True
         self.layout_3.addWidget(self.widget_3)
         self.layout_3.dispose()
@@ -378,7 +379,7 @@ class Tour_3(Tour):
         # layout 3
         self.layout_3 = VerticalLayout(None, paddings=[0] * 4, space=0)
         self.layout_3.setSize(self.screen.get_width(), self.screen.get_height())
-        self.widget_3 = Label(self.layout_3, 'Excellent attack!'.replace(' ', '  '), positions=['center', 'top'], font=pygame.font.Font('fonts/Pacifico.ttf', 60), color=BLACK)
+        self.widget_3 = Label(self.layout_3, 'Excellent attack!'.replace(' ', '  '), positions=['center', 'top'], font=pygame.font.Font(resource_path('fonts/Pacifico.ttf'), 60), color=BLACK)
         self.widget_3.finished = True
         self.layout_3.addWidget(self.widget_3)
         self.layout_3.dispose()
@@ -467,7 +468,7 @@ class Tour_5(Tour):
         # layout 3
         self.layout_3 = VerticalLayout(None, paddings=[0] * 4, space=0)
         self.layout_3.setSize(self.screen.get_width(), self.screen.get_height())
-        self.widget_3 = Label(self.layout_3, 'Excellent!'.replace(' ', '  '), positions=['center', 'top'], font=pygame.font.Font('fonts/Pacifico.ttf', 60), color=BLACK)
+        self.widget_3 = Label(self.layout_3, 'Excellent!'.replace(' ', '  '), positions=['center', 'top'], font=pygame.font.Font(resource_path('fonts/Pacifico.ttf'), 60), color=BLACK)
         self.widget_3.finished = True
         self.layout_3.addWidget(self.widget_3)
         self.layout_3.dispose()
@@ -521,7 +522,7 @@ class Tour_5(Tour):
         surf.set_alpha(0)
         alpha = 0
         timer = 2
-        font = pygame.font.Font('fonts/Pacifico.ttf', 58)
+        font = pygame.font.Font(resource_path('fonts/Pacifico.ttf'), 58)
         while alpha != 256:
             self.screen.fill((0, 0, 0))
             surf.fill((0, 0, 0, 255))

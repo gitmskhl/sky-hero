@@ -3,6 +3,9 @@ import os
 import sys
 import json
 
+
+from .utils import resource_path
+
 BASE_DIR = '.'
 if __name__ == "__main__":
     import utils
@@ -93,8 +96,8 @@ class Editor:
             res_count = len(self.resources[dirname])
             info_path = os.path.join('resources', dirname, 'info.txt')
             self.resource_props[dirname] = {}
-            if os.path.exists(info_path):
-                with open(info_path, 'r') as f:
+            if os.path.exists(resource_path(info_path)):
+                with open(resource_path(info_path), 'r') as f:
                     for line in f:
                         lst = line.split(':')
                         prop = lst[0].strip()
@@ -215,7 +218,7 @@ class Editor:
 
     def save(self):
         assert False, 'It is impossible'
-        with open(BASE_DIR + f'/maps/map_level{self.level}.json', 'w') as f:
+        with open(resource_path(BASE_DIR + f'/maps/map_level{self.level}.json'), 'w') as f:
             json.dump(
                 {
                     'tile_map': {str(k): v for k, v in self.tile_map.items()},
@@ -238,7 +241,7 @@ class Editor:
 
     def load(self):
         try:
-            with open(BASE_DIR + f'/maps/map_level{self.level}.json', 'r') as f:
+            with open(resource_path(BASE_DIR + f'/maps/map_level{self.level}.json'), 'r') as f:
                 data = json.load(f)
                 self.tile_map = {tuple(map(int, [x.replace('(', '').replace(')', '') for x in k.split(',')])): v for k, v in data['tile_map'].items()}
                 self.nogrid_tiles = data['nogrid_tiles']
