@@ -410,8 +410,10 @@ class App:
                     (p[0][0] - self.map.camera[0], p[0][1] - self.map.camera[1])
                 )
             for p in fordel:
-                self.projectiles.remove(p)
-
+                try:
+                    self.projectiles.remove(p)
+                except:
+                    pass
             # sparks
             fordel = []
             for spark in self.sparks:
@@ -444,8 +446,6 @@ class App:
                         self.main_player.jump()
                     elif event.key == keyboard.KEY_BINDINGS['attack']:
                         self.main_player.dash()
-                    elif event.key == pygame.K_r:
-                        self.enemies = []
 
                 elif event.type == pygame.KEYUP:
                     if event.key == keyboard.KEY_BINDINGS['left']:
