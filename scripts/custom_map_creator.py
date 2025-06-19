@@ -15,6 +15,7 @@ from .custom_map_widget import (
     MessageBox,
     WarningMessageBox,
 )
+from . import physics
 
 pygame.init()
 
@@ -26,8 +27,7 @@ GRAY = (50,) * 3
 DARK_GRAY = (100, 100, 100)
 
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+physics.SCREEN_HEIGHT = 600
 
 MAX_FILLED_SECTOR = 500
 RESOURCES_DIR = 'resources' # RELATIVE PATH TO THE RESOURCES
@@ -146,14 +146,14 @@ class Editor:
                 screen,
                 GRAY,
                 (0, j * self.tile_size - self.camera[1]),
-                (SCREEN_WIDTH, j * self.tile_size - self.camera[1])
+                (physics.SCREEN_WIDTH, j * self.tile_size - self.camera[1])
             )
         for i in range(i_start, i_end):
             pygame.draw.line(
                 screen,
                 GRAY,
                 (i * self.tile_size - self.camera[0], 0),
-                (i * self.tile_size - self.camera[0], SCREEN_HEIGHT)
+                (i * self.tile_size - self.camera[0], physics.SCREEN_HEIGHT)
             )
 
 
@@ -218,8 +218,8 @@ class Editor:
     def render(self, screen):
         i_start = int(self.camera[0] // self.tile_size)
         j_start = int(self.camera[1] // self.tile_size)
-        i_end = int((self.camera[0] + SCREEN_WIDTH) // self.tile_size + 1)
-        j_end = int((self.camera[1] + SCREEN_HEIGHT) // self.tile_size + 1)
+        i_end = int((self.camera[0] + physics.SCREEN_WIDTH) // self.tile_size + 1)
+        j_end = int((self.camera[1] + physics.SCREEN_HEIGHT) // self.tile_size + 1)
         if self.grid:
             self._draw_grid(screen, i_start, j_start, i_end, j_end)
         moving_tiles_positions = set([x for x, _ in self.moving_tiles]) if self.moving_selected_area else set()
@@ -233,9 +233,9 @@ class Editor:
         for tile in self.nogrid_tiles:
             if self.moving_selected_area and tile in self.moving_offgrid_tiles: continue
             img = self.resources[tile['resource']][tile['variant']]
-            if tile['pos'][0] * self.k - self.camera[0] + img.get_width() < 0 or tile['pos'][0] * self.k - self.camera[0] > SCREEN_WIDTH:
+            if tile['pos'][0] * self.k - self.camera[0] + img.get_width() < 0 or tile['pos'][0] * self.k - self.camera[0] > physics.SCREEN_WIDTH:
                 continue
-            if tile['pos'][1] * self.k - self.camera[1] + img.get_height() < 0 or tile['pos'][1] * self.k - self.camera[1] > SCREEN_HEIGHT:
+            if tile['pos'][1] * self.k - self.camera[1] + img.get_height() < 0 or tile['pos'][1] * self.k - self.camera[1] > physics.SCREEN_HEIGHT:
                 continue
             screen.blit(img, (tile['pos'][0] * self.k - self.camera[0], tile['pos'][1] * self.k - self.camera[1]))
         
@@ -707,7 +707,7 @@ def warning_box(clock, state, text):
     width, height = 500, 170
     box.setSize(width, height)
     box.setFixedSizes([True, True])
-    box.setPosition((SCREEN_WIDTH - width) // 2, (SCREEN_HEIGHT - height) // 2)
+    box.setPosition((physics.SCREEN_WIDTH - width) // 2, (physics.SCREEN_HEIGHT - height) // 2)
     box.show()
     box.dispose()
     dim_surf = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
@@ -794,7 +794,7 @@ def run(screen_=None, filename=None):
     panel.setPosition(0, 0)
     resource_panel = ResourcePanel(editor.resources, (2, 5))
     panel.setHeight(resource_panel.panel_height)
-    panel.setWidth(SCREEN_WIDTH)
+    panel.setWidth(physics.SCREEN_WIDTH)
     panel.setFixedSizes([False, True])
     panel.setBackgroundColors([[236, ] * 3, [236,] * 3])
     panel.setBorderWidth(0)
@@ -921,7 +921,7 @@ def run(screen_=None, filename=None):
     show_grid(grid_button)
 
     events = []
-    tool_bar_rect = pygame.Rect(0, 0, SCREEN_WIDTH, resource_panel.panel_height)
+    tool_bar_rect = pygame.Rect(0, 0, physics.SCREEN_WIDTH, resource_panel.panel_height)
     while True:
         clock.tick(60)
         screen.fill((0, 0, 0))

@@ -5,6 +5,7 @@ import json
 
 
 from .utils import resource_path
+from . import physics
 
 BASE_DIR = '.'
 if __name__ == "__main__":
@@ -13,8 +14,6 @@ if __name__ == "__main__":
     HISTORY_MAX=100
     GRAY = (50,) * 3
 
-    SCREEN_WIDTH = 800
-    SCREEN_HEIGHT = 600
 else:
     from . import resource_manager as rmanager
 
@@ -116,22 +115,22 @@ class Editor:
                 screen,
                 GRAY,
                 (0, j * self.tile_size - self.camera[1]),
-                (SCREEN_WIDTH, j * self.tile_size - self.camera[1])
+                (physics.SCREEN_WIDTH, j * self.tile_size - self.camera[1])
             )
         for i in range(i_start, i_end):
             pygame.draw.line(
                 screen,
                 GRAY,
                 (i * self.tile_size - self.camera[0], 0),
-                (i * self.tile_size - self.camera[0], SCREEN_HEIGHT)
+                (i * self.tile_size - self.camera[0], physics.SCREEN_HEIGHT)
             )
 
 
     def render(self, screen):
         i_start = int(self.camera[0] // self.tile_size)
         j_start = int(self.camera[1] // self.tile_size)
-        i_end = int((self.camera[0] + SCREEN_WIDTH) // self.tile_size + 1)
-        j_end = int((self.camera[1] + SCREEN_HEIGHT) // self.tile_size + 1)
+        i_end = int((self.camera[0] + physics.SCREEN_WIDTH) // self.tile_size + 1)
+        j_end = int((self.camera[1] + physics.SCREEN_HEIGHT) // self.tile_size + 1)
         if self.grid:
             self._draw_grid(screen, i_start, j_start, i_end, j_end)
         for i in range(i_start, i_end):
@@ -142,9 +141,9 @@ class Editor:
                     screen.blit(img, (i * self.tile_size - self.camera[0], j * self.tile_size - self.camera[1]))
         for tile in self.nogrid_tiles:
             img = self.resources[tile['resource']][tile['variant']]
-            if tile['pos'][0] * self.k - self.camera[0] + img.get_width() < 0 or tile['pos'][0] * self.k - self.camera[0] > SCREEN_WIDTH:
+            if tile['pos'][0] * self.k - self.camera[0] + img.get_width() < 0 or tile['pos'][0] * self.k - self.camera[0] > physics.SCREEN_WIDTH:
                 continue
-            if tile['pos'][1] * self.k - self.camera[1] + img.get_height() < 0 or tile['pos'][1] * self.k - self.camera[1] > SCREEN_HEIGHT:
+            if tile['pos'][1] * self.k - self.camera[1] + img.get_height() < 0 or tile['pos'][1] * self.k - self.camera[1] > physics.SCREEN_HEIGHT:
                 continue
             screen.blit(img, (tile['pos'][0] * self.k - self.camera[0], tile['pos'][1] * self.k - self.camera[1]))
         
@@ -253,7 +252,7 @@ class Editor:
             pass    
 
 if __name__ == "__main__":
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.NOFRAME)
+    screen = pygame.display.set_mode((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT), pygame.NOFRAME)
     clock = pygame.time.Clock()
 
     if len(sys.argv) > 2:

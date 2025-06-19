@@ -43,7 +43,9 @@ STATE = 'menu'
 if __name__ != "__main__":
 	exit(0)
 
-screen = pygame.display.set_mode((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT)) 
+screen = pygame.display.set_mode((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT), pygame.NOFRAME | pygame.FULLSCREEN) 
+fullScreen = True
+physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT = screen.get_size()
 pygame.display.set_caption("Sky Hero")
 clock = pygame.time.Clock()
 achieved_level = 1
@@ -311,6 +313,8 @@ class App:
 
     def run_game(self):
         global level, STATE, level_config
+        global fullScreen, screen
+
         if level < 0:
             self.lesson_tour_run()
             if not self.tour_running:
@@ -447,15 +451,22 @@ class App:
                         self.main_player.jump()
                     elif event.key == keyboard.KEY_BINDINGS['attack']:
                         self.main_player.dash()
-                
+                    elif event.key == pygame.K_F11:
+                        fullScreen = not fullScreen
+                        if fullScreen:
+                            screen = pygame.display.set_mode((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT), pygame.NOFRAME | pygame.FULLSCREEN)
+                            physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT = screen.get_size()
+                        else:
+                            physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT = 800, 600
+                            screen = pygame.display.set_mode((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT), pygame.NOFRAME)
+                        self.display = pygame.Surface((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT), pygame.SRCALPHA)
+                        self.display_2 = pygame.Surface((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT))
+
                 elif event.type == pygame.KEYUP:
                     if event.key == keyboard.KEY_BINDINGS['left']:
                         self.main_player.move[0] = False
                     elif event.key == keyboard.KEY_BINDINGS['right']:
                         self.main_player.move[1] = False
-                elif event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
 
             if self.transition:
                 surf = pygame.Surface((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT))

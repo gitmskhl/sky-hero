@@ -1,7 +1,7 @@
 import pygame
 import json
 from .editor import Editor 
-from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK
+from scripts import physics
 from scripts.resource_manager import load_image
 from .cloud import Clouds
 from .leaf import Leaves
@@ -11,7 +11,7 @@ from random import random
 class Map(Editor):
     def __init__(self, level, level_config=None):
         super().__init__(level, level_config=level_config)
-        self.background_image = load_image('images/background.png', 0, BLACK, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.background_image = load_image('images/background.png', 0, physics.BLACK, (physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT))
         self.clouds = Clouds(count=30)
         self._init_leaves()
         self.particles = Particles()
@@ -62,8 +62,8 @@ class Map(Editor):
         self.clouds.render(display)
         i_start = int(self.camera[0] // self.tile_size)
         j_start = int(self.camera[1] // self.tile_size)
-        i_end = int((self.camera[0] + SCREEN_WIDTH) // self.tile_size + 1)
-        j_end = int((self.camera[1] + SCREEN_HEIGHT) // self.tile_size + 1)
+        i_end = int((self.camera[0] + physics.SCREEN_WIDTH) // self.tile_size + 1)
+        j_end = int((self.camera[1] + physics.SCREEN_HEIGHT) // self.tile_size + 1)
         for i in range(i_start, i_end):
             for j in range(j_start, j_end):
                 if (i, j) in self.tile_map:
@@ -72,9 +72,9 @@ class Map(Editor):
                     display.blit(img, (i * self.tile_size - self.camera[0], j * self.tile_size - self.camera[1]))
         for tile in self.nogrid_tiles:
             img = self.resources[tile['resource']][tile['variant']]
-            if tile['pos'][0] * self.k - self.camera[0] + img.get_width() < 0 or tile['pos'][0] * self.k - self.camera[0] > SCREEN_WIDTH:
+            if tile['pos'][0] * self.k - self.camera[0] + img.get_width() < 0 or tile['pos'][0] * self.k - self.camera[0] > physics.SCREEN_WIDTH:
                 continue
-            if tile['pos'][1] * self.k - self.camera[1] + img.get_height() < 0 or tile['pos'][1] * self.k - self.camera[1] > SCREEN_HEIGHT:
+            if tile['pos'][1] * self.k - self.camera[1] + img.get_height() < 0 or tile['pos'][1] * self.k - self.camera[1] > physics.SCREEN_HEIGHT:
                 continue
             display.blit(img, (tile['pos'][0] * self.k - self.camera[0], tile['pos'][1] * self.k - self.camera[1]))
             
