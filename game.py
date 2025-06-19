@@ -10,7 +10,7 @@ from scripts.menu import ButtonsMenu
 from scripts.map import Map
 from scripts.player import Player
 from scripts.enemy import Enemy 
-from scripts.physics import SCREEN_WIDTH, SCREEN_HEIGHT
+from scripts import physics
 from scripts.spark import Spark
 from scripts.menu import (
     MainMenu,
@@ -43,7 +43,7 @@ STATE = 'menu'
 if __name__ != "__main__":
 	exit(0)
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.NOFRAME)
+screen = pygame.display.set_mode((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT)) 
 pygame.display.set_caption("Sky Hero")
 clock = pygame.time.Clock()
 achieved_level = 1
@@ -58,8 +58,8 @@ keyboard.init_keyboard()
 class App:
     def __init__(self, level_config=None):
         gc.collect()
-        self.display = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-        self.display_2 = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.display = pygame.Surface((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT), pygame.SRCALPHA)
+        self.display_2 = pygame.Surface((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT))
         self.clock = clock
         self.running = True
         self.level = level
@@ -93,7 +93,7 @@ class App:
             self.sfx['final'].set_volume(.5)
 
         # menu
-        size = (SCREEN_WIDTH, SCREEN_HEIGHT)
+        size = (physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT)
         if 'main_menu' not in self.__dict__:
 
             # play menu
@@ -226,7 +226,8 @@ class App:
     def _effectSliderMoved(self, slider):
         for sfx_name, sfx in self.sfx.items():
             sfx.set_volume(slider.value / 100)
-            self.sfx_sliders[sfx_name].setValue(slider.value)
+            if sfx_name in self.sfx_sliders:
+                self.sfx_sliders[sfx_name].setValue(slider.value)
 
     def _sliderMoved(self, slider):
         pygame.mixer.music.set_volume(slider.value / 100)
@@ -425,9 +426,9 @@ class App:
 
 
             if self.dead == 0:
-                self.map.move_camera(self.main_player.pos[0] - SCREEN_WIDTH // 2, self.main_player.pos[1] - SCREEN_HEIGHT // 2)
+                self.map.move_camera(self.main_player.pos[0] - physics.SCREEN_WIDTH // 2, self.main_player.pos[1] - physics.SCREEN_HEIGHT // 2)
             elif hasattr(self, 'last_main_player_pos'):
-                self.map.move_camera(self.last_main_player_pos[0] - SCREEN_WIDTH // 2, self.last_main_player_pos[1] - SCREEN_HEIGHT // 2)
+                self.map.move_camera(self.last_main_player_pos[0] - physics.SCREEN_WIDTH // 2, self.last_main_player_pos[1] - physics.SCREEN_HEIGHT // 2)
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
@@ -446,18 +447,21 @@ class App:
                         self.main_player.jump()
                     elif event.key == keyboard.KEY_BINDINGS['attack']:
                         self.main_player.dash()
-
+                
                 elif event.type == pygame.KEYUP:
                     if event.key == keyboard.KEY_BINDINGS['left']:
                         self.main_player.move[0] = False
                     elif event.key == keyboard.KEY_BINDINGS['right']:
                         self.main_player.move[1] = False
+                elif event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
 
             if self.transition:
-                surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+                surf = pygame.Surface((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT))
                 surf.fill((0, 0, 0))
-                coef = (SCREEN_WIDTH ** 2 + SCREEN_HEIGHT ** 2) ** .5 / 2 // 30 + 1
-                pygame.draw.circle(surf, (255, 255, 255), (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2), coef * (30 - abs(self.transition)))
+                coef = (physics.SCREEN_WIDTH ** 2 + physics.SCREEN_HEIGHT ** 2) ** .5 / 2 // 30 + 1
+                pygame.draw.circle(surf, (255, 255, 255), (physics.SCREEN_WIDTH // 2, physics.SCREEN_HEIGHT // 2), coef * (30 - abs(self.transition)))
                 surf.set_colorkey((255, 255, 255))
                 self.display.blit(surf, (0, 0))
 
