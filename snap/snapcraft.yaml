@@ -21,18 +21,36 @@ apps:
       - unity7
       - opengl
       - home
+      - audio-playback
+    environment:
+      SDL_AUDIODRIVER: "pulse,dummy"
+      PULSE_SERVER: "unix:${XDG_RUNTIME_DIR}/../pulse/native"
 
 parts:
   sky-hero:
-    plugin: dump
-    source: ./game
-    organize:
-      game: bin/game
+    plugin: python
+    source: .
+    python-packages:
+      - pyinstaller
+      - pygame
+    build-packages:
+      - gcc
+      - libc6-dev
     stage-packages:
+      - libasound2
+      - libpulse0       # ← ЭТО ДЛЯ pulseaudio
       - libglib2.0-0
       - libgtk-3-0
       - libgdk-pixbuf2.0-0
       - libx11-6
-      - libasound2
+      - libpulse-mainloop-glib0
 
 
+    override-build: |
+      snapcraftctl build
+      pyinstaller game.spec
+      install -Dm755 dist/game $SNAPCRAFT_PART_INSTALL/bin/game
+
+layout:
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio:
+    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio

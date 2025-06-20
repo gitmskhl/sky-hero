@@ -77,7 +77,11 @@ class App:
         self.win_timer = 0
 
         if 'main_menu' not in self.__dict__:
-
+            if not pygame.mixer.get_init():
+                try:
+                    pygame.mixer.init()
+                except Exception as e:
+                    print("⚠️ mixer.init() failed:", e)
             self.sfx = {
                 'jump': pygame.mixer.Sound(resource_path('sfx/jump.wav')),
                 'dash': pygame.mixer.Sound(resource_path('sfx/dash.wav')),
