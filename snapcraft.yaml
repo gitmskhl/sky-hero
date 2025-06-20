@@ -1,0 +1,38 @@
+name: sky-hero
+base: core22
+version: '1.0'
+summary: "Become a sky hero! Jump, dash and defeat foes on your path to glory."
+description: |
+  Sky Hero is a fast-paced platformer that trains you in jumping,
+  dashing and attacking. Defeat enemies on every level, enjoy
+  atmospheric music and unlock new stages. The road to heroism lies
+  ahead — only you can conquer it!
+
+grade: stable
+confinement: strict
+
+apps:
+  sky-hero:
+    command: bin/game
+    plugs:
+      - desktop
+      - x11
+      - wayland
+      - unity7
+      - opengl
+      - home
+
+parts:
+  sky-hero:
+    plugin: dump
+    source: ./game
+    organize:
+      game: bin/game
+    stage-packages:
+      - libglib2.0-0
+      - libgtk-3-0
+      - libgdk-pixbuf2.0-0
+      - libx11-6
+      - libasound2
+
+
