@@ -43,8 +43,8 @@ STATE = 'menu'
 if __name__ != "__main__":
 	exit(0)
 
-screen = pygame.display.set_mode((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT), pygame.NOFRAME | pygame.FULLSCREEN) 
-fullScreen = True
+screen = pygame.display.set_mode((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT), pygame.NOFRAME) 
+fullScreen = False
 physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT = screen.get_size()
 pygame.display.set_caption("Sky Hero")
 clock = pygame.time.Clock()
@@ -111,6 +111,10 @@ class App:
             settings_menu.effect_volume_slider.setValue(20)
             settings_menu.volume_slider.connect(lambda slider=settings_menu.volume_slider: self._sliderMoved(slider))
             settings_menu.volume_slider.setValue(50)
+
+            settings_menu.fullscreen_button.connect(self._toggle_fullscreen)
+            settings_menu.fullscreen_button.text = f"Fullscreen: {'ON' if fullScreen else 'OFF'}"
+            self.settings_menu = settings_menu
 
             advanced_settings_menu = AdvancedSettingsMenu(self.play_menu, size)
             advanced_settings_menu.ambience_slider.connect(lambda slider=advanced_settings_menu.ambience_slider: self._certainEffectSliderMoved(slider, 'ambience'))
@@ -234,6 +238,27 @@ class App:
     def _sliderMoved(self, slider):
         pygame.mixer.music.set_volume(slider.value / 100)
 
+    def _toggle_fullscreen(self):
+        global fullScreen, screen
+        fullScreen = not fullScreen
+        if fullScreen:
+            screen = pygame.display.set_mode(
+                (physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT),
+                pygame.NOFRAME | pygame.FULLSCREEN
+            )
+            physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT = screen.get_size()
+        else:
+            physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT = 800, 600
+            screen = pygame.display.set_mode(
+                (physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT),
+                pygame.NOFRAME
+            )
+        self.display = pygame.Surface((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT), pygame.SRCALPHA)
+        self.display_2 = pygame.Surface((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT))
+        if hasattr(self, 'settings_menu'):
+            self.settings_menu.fullscreen_button.text = f"Fullscreen: {'ON' if fullScreen else 'OFF'}"
+        # save_fullscreen()
+
     def _init_enemies(self):
         self.enemies = []
         for pos in self.map.get_positions('spawners', 1, keep=False):
@@ -313,7 +338,6 @@ class App:
 
     def run_game(self):
         global level, STATE, level_config
-        global fullScreen, screen
 
         if level < 0:
             self.lesson_tour_run()
@@ -452,15 +476,7 @@ class App:
                     elif event.key == keyboard.KEY_BINDINGS['attack']:
                         self.main_player.dash()
                     elif event.key == pygame.K_F11:
-                        fullScreen = not fullScreen
-                        if fullScreen:
-                            screen = pygame.display.set_mode((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT), pygame.NOFRAME | pygame.FULLSCREEN)
-                            physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT = screen.get_size()
-                        else:
-                            physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT = 800, 600
-                            screen = pygame.display.set_mode((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT), pygame.NOFRAME)
-                        self.display = pygame.Surface((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT), pygame.SRCALPHA)
-                        self.display_2 = pygame.Surface((physics.SCREEN_WIDTH, physics.SCREEN_HEIGHT))
+                        self._toggle_fullscreen()
 
                 elif event.type == pygame.KEYUP:
                     if event.key == keyboard.KEY_BINDINGS['left']:

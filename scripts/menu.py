@@ -96,12 +96,15 @@ class SettingsMenu(Menu):
         self.effect_volume_layout.addWidget(volume_label)
         self.effect_volume_layout.addWidget(self.effect_volume_slider)
 
+        self.fullscreen_button = Button(root, text='Fullscreen: ON', border_radius=br)
+
         self.advanced_sound_button = Button(root, text='Advanced', border_radius=br)
         self.back_button = Button(root, text='Back', border_radius=br)
         self.back_button.connect(lambda: pages.setPage(0))
         self.advanced_sound_button.connect(lambda: pages.setPage(2))
         self.addWidget(self.effect_volume_layout)
         self.addWidget(self.volume_layout)
+        self.addWidget(self.fullscreen_button)
         self.addWidget(self.advanced_sound_button)
         self.addWidget(self.back_button)
  
