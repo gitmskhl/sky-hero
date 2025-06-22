@@ -1,56 +1,55 @@
-name: sky-hero
-base: core22
-version: '1.0'
-summary: "Become a sky hero! Jump, dash and defeat foes on your path to glory."
+# snapcraft.yaml — полный пример «под ключ»
+# ------------------------------------------
+name: sky-hero                    # имя пакета в Snap Store
+base: core22                      # минимальный рантайм Ubuntu 22.04 LTS
+version: '1.0'                    # версия вашей игры
+summary: Fast-paced ninja platformer
 description: |
-  Sky Hero is a fast-paced platformer that trains you in jumping,
-  dashing and attacking. Defeat enemies on every level, enjoy
-  atmospheric music and unlock new stages. The road to heroism lies
-  ahead — only you can conquer it!
+  Sky-Hero is an arcade platformer where a ninja jumps across rooftops
+  while dodging bullets and striking enemies. Written in Python with Pygame.
 
-grade: stable
-confinement: strict
+grade: stable                     # ‘stable’ = публикуется в канал stable
+confinement: strict               # изолированный снап
 
+# ────────────── Запуск приложения ──────────────
 apps:
   sky-hero:
-    command: bin/game
+    command: bin/game # бинарник, который кладём в override-build
+    extensions: [gnome]        # подключает gtk-common-themes, курсоры, шрифты
     plugs:
-      - desktop
-      - x11
-      - wayland
-      - unity7
-      - opengl
-      - home
-      - audio-playback
+      - audio-playback            # доступ к PulseAudio / PipeWire
+      - x11                       # X11-окно
+      - wayland                   # Wayland-окно
+      - opengl                    # аппаратное ускорение
+      - desktop                   # темы, курсоры, иконки
+      - home                      # чтение пользовательских файлов (сейвы)
     environment:
-      SDL_AUDIODRIVER: "pulse,dummy"
-      PULSE_SERVER: "unix:${XDG_RUNTIME_DIR}/../pulse/native"
+      # Скрываем «Hello from the pygame community…» при каждом запуске
+      PYGAME_HIDE_SUPPORT_PROMPT: "1"
 
+# ────────────── Сборка игры ──────────────
 parts:
   sky-hero:
     plugin: python
-    source: .
+    source: .                     # корень вашего репозитория
     python-packages:
-      - pyinstaller
-      - pygame
+      - pyinstaller==6.7.0        # нужная версия PyInstaller
+      - pygame==2.6.1             # та же версия, что при разработке
     build-packages:
       - gcc
-      - libc6-dev
-    stage-packages:
-      - libasound2
-      - libpulse0       # ← ЭТО ДЛЯ pulseaudio
-      - libglib2.0-0
-      - libgtk-3-0
-      - libgdk-pixbuf2.0-0
-      - libx11-6
-      - libpulse-mainloop-glib0
-
+      - libc6-dev                 # для сборки C-расширений, если появятся
+    stage-packages:               # библиотеки, которые будут внутри снапа
+      - libpulse0                 # libpulse-simple.so.0, libpulse.so.0
+      - libpulse-mainloop-glib0   # glib-backend для PulseAudio
 
     override-build: |
-      snapcraftctl build
-      pyinstaller game.spec
-      install -Dm755 dist/game $SNAPCRAFT_PART_INSTALL/bin/game
+      set -e
+      # 1. стандартный шаг плагина: виртуальное окружение + pip install
+      craftctl default
 
-layout:
-  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio:
-    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio
+      # 2. собираем один-файловый бинарник; spec уже лежит в исходнике
+      VENV_PY="$CRAFT_PART_INSTALL/bin/python"
+      "$VENV_PY" -m PyInstaller game.spec
+      # 3. кладём результат туда, где ждёт директива apps.sky-hero.command
+      install -Dm755 dist/game $CRAFT_PART_INSTALL/bin/game
+
