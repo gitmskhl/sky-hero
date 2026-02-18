@@ -37,6 +37,7 @@ from random import random
 from math import pi, cos, sin
 
 pygame.init()
+
 STATE = 'menu'
 
 if __name__ != "__main__":
@@ -55,23 +56,6 @@ TOTAL_LEVELS = count_levels()
 
 
 keyboard.init_keyboard()
-
-def safe_mixer_init(frequency=44100, size=-16, channels=2, buffer=512):
-    try:
-        pygame.mixer.init(frequency, size, channels, buffer)
-    except pygame.error:
-        #   ❶ Переключаемся на 'dummy' (библиотека «молча» съедает звук)
-        os.environ["SDL_AUDIODRIVER"] = "dummy"
-        try:
-            pygame.mixer.init()
-            print("♫  Звук недоступен — игра запущена без аудио")
-        except pygame.error:
-            #   ❷ Даже 'dummy' не завёлся — работаем совсем без mixer’а
-            print("♫  Mixer не инициализирован; все аудио-вызовы пропущены")
-
-
-
-safe_mixer_init()
 
 class App:
     def __init__(self, level_config=None):
@@ -93,6 +77,11 @@ class App:
         self.win_timer = 0
 
         if 'main_menu' not in self.__dict__:
+            if not pygame.mixer.get_init():
+                try:
+                    pygame.mixer.init()
+                except Exception as e:
+                    print("⚠️ mixer.init() failed:", e)
             self.sfx = {
                 'jump': pygame.mixer.Sound(resource_path('sfx/jump.wav')),
                 'dash': pygame.mixer.Sound(resource_path('sfx/dash.wav')),
